@@ -1,22 +1,24 @@
 /**
  * Chess Game
- * @author vietnq
+ * @author lmtuan
  * @version 0.9
  */
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
+
 #include <TextureWrapper.h>
+#include <BoardGUI.h>
 
 
 
 /**
  * Sizes and title of the game window
  */
-const int SCREEN_WIDTH = 700;
-const int SCREEN_HEIGHT = 700;
-const char* WINDOW_TITLE = "Chess Game by vietnq";
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+const char* WINDOW_TITLE = "Chess Game by lmtuan";
 
 
 /**
@@ -33,42 +35,34 @@ bool initGraphic(SDL_Window* &window, SDL_Renderer* &rederer);
 void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 
 
-int main(int argc, char* args[])
+int main(int argc, char* argv[])
 {
   SDL_Window* window;
   SDL_Renderer* renderer;
 
   if( !initGraphic(window, renderer) ) return 0; //quit if cannot initialize graphic
 
-  if (renderer == NULL)
+  /**
+   * Init GUIs
+   */
+  BoardGUI bgui;
+  bgui.initGUI(renderer);
+  bgui.draw(renderer);
+
+  int move = 0;
+  do
   {
-    printf("null render");
-  }
+    move = bgui.getMove();
+    if (move == -1) {
+      break;
+    } else if (move == 0) {
 
-  TextureWrapper bg;
-  TextureWrapper img;
+    } else {
+      printf("move is %i\n", move);
+    }
+  }while(true);
 
-  if (!bg.loadFromFile(renderer, "img/chess.png"))
-  {
-      printf("fuck");
-  }
-  img.loadFromFile(renderer, "img/white_queen.png");
-
-
-
-  //clear screen
-  SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-  SDL_RenderClear( renderer );
-
-  bg.render(renderer, 0, 0);
-  img.render(renderer, 0, 0);
-
-  SDL_RenderPresent(renderer);
-
-  SDL_Delay(1000);
   quitGraphic(window, renderer);
-
-
   return 0;
 }
 
