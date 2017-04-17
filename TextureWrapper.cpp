@@ -58,6 +58,16 @@ void TextureWrapper::destroyTexture()
   }
 }
 
+void TextureWrapper::setBlendMode(SDL_BlendMode blendMode)
+{
+  SDL_SetTextureBlendMode(texture, blendMode);
+}
+
+void TextureWrapper::setTransparency(Uint8 alpha)
+{
+  SDL_SetTextureAlphaMod(texture, alpha);
+}
+
 void TextureWrapper::render(SDL_Renderer* renderer, int x, int y, SDL_Rect* crop, SDL_Rect* stretch)
 {
   SDL_Rect renderQuad = {x, y, textureWidth, textureHeight};

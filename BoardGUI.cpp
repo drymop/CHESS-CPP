@@ -21,6 +21,7 @@ void BoardGUI::initGUI(SDL_Renderer* renderer)
   //if (!loadBoard) printf("null chessboared");
   bool loadPiece = piecesSprite.loadFromFile(renderer, "img/pieces.png");
   //if(!loadPiece) printf("null piece");
+  piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND);
 
   //position of piece's image on sprite sheet
   for(int i = 0; i < 12; i++) {
@@ -53,12 +54,13 @@ void BoardGUI::draw(SDL_Renderer* renderer, Board* brd)
     {
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
     }
-    else
+    else if (piece >= 12)
     {
-      if (piece != -1)
-      {
-       printf("gui: piece %i at square %i", piece, i);
-      }
+      Uint8 alpha = 100;
+      piecesSprite.setTransparency(alpha);
+      piecesSprite.render(renderer, &pieceClips[piece-12], &boardSquares[i]);
+      alpha = 255;
+      piecesSprite.setTransparency(alpha);
     }
   }
   SDL_RenderPresent(renderer);

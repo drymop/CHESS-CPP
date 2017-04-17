@@ -34,14 +34,6 @@ class Board
      */
     void chooseSquare(int square);
 
-    /**
-     * move a piece from square (x1, y1) to (x2, y2)
-     * @param x1, y1 row and column of the starting square (from 0 to 7)
-     * @param x2, y2 row and column of the destination square (from 0 to 7)
-     * e.g square a3 is (0, 2)
-     */
-    bool makeMove(int x1,int y1,int x2,int y2);
-
   private:
     int board[8][8];
     int player;
@@ -51,6 +43,15 @@ class Board
      * -1 if no chosen square, else 0 to 63
      */
     int chosenSquare;
+
+    /**
+     * move a piece from square (x1, y1) to (x2, y2)
+     * @param x1, y1 row and column of the starting square (from 0 to 7)
+     * @param x2, y2 row and column of the destination square (from 0 to 7)
+     * e.g square a3 is (0, 2)
+     */
+    bool makeMove(int x1,int y1,int x2,int y2);
+
 
 
     bool isMoveLegal(int x1, int y1, int x2, int y2);
