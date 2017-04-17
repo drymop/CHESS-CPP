@@ -56,7 +56,7 @@ void Board::chooseSquare(int square)
 {
   printf("board: choose square %i\n", square);
   // if click somewhere else, unchoose the square
-  if (square < 0 || square > 63)
+  if (square < 0 || square > 63 || square == chosenSquare)
   {
     chosenSquare = -1;
   }
