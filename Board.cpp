@@ -1,14 +1,15 @@
 #include "Board.h"
 #include <PieceType.h>
 #include <stdio.h>
-#include <vector>
+
 Board::Board()
 {
   player = 1;
-  //board.resize(8, std::vector<int> (8, -1));
+  chosenSquare = -1;
   initBoard();
 }
 Board::~Board() {};
+
 void Board::initBoard(){
   int i,j;
   for (j=0;j<8;j++){
@@ -44,18 +45,46 @@ void Board::initBoard(){
 
 int Board::getPiece(int square)
 {
+  if (square == chosenSquare)
+  {
+    return board[square/8][square%8] + 12;
+  }
   return board[square/8][square%8];
 }
 
-void chooseSquare(int square)
+void Board::chooseSquare(int square)
 {
-
+  printf("board: choose square %i\n", square);
+  // if click somewhere else, unchoose the square
+  if (square < 0 || square > 63)
+  {
+    chosenSquare = -1;
+  }
+  else
+  {
+    if(chosenSquare == -1)
+    {
+      if (board[square/8][square%8] >= 0)
+      {
+        chosenSquare = square;
+        printf("board: get piece pick up\n");
+      }
+    }
+    else
+    {
+      makeMove(chosenSquare/8, chosenSquare%8, square/8, square%8);
+      chosenSquare = -1;
+      printf("board: get piece put down\n");
+    }
+  }
+  printf("board: chosen square is %i\n"+chosenSquare);
 }
 
 bool Board::makeMove(int x1,int y1,int x2,int y2)
 {
     if (isMoveLegal(x1, y1, x2, y2)){
-        board[x1][y1]=board[x2][y2];
+        board[x2][y2]=board[x1][y1];
+        board[x1][y1] = -1;
         return true;
     }
     return false;

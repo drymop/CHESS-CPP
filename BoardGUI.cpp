@@ -1,6 +1,6 @@
 #include "BoardGUI.h"
 #include <TextureWrapper.h>
-//#include <PieceType.h>
+#include <PieceType.h>
 
 #include <stdio.h>
 
@@ -49,9 +49,16 @@ void BoardGUI::draw(SDL_Renderer* renderer, Board* brd)
   for (int i = 0; i < 64; i++)
   {
     int piece = brd->getPiece(i);
-    if (piece >= 0)
+    if (piece >= 0 && piece < 12)
     {
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
+    }
+    else
+    {
+      if (piece != -1)
+      {
+       printf("gui: piece %i at square %i", piece, i);
+      }
     }
   }
   SDL_RenderPresent(renderer);

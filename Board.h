@@ -1,7 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <vector>
 
 class Board
 {
@@ -46,6 +45,12 @@ class Board
   private:
     int board[8][8];
     int player;
+
+    /**
+     * square chosen when player click,
+     * -1 if no chosen square, else 0 to 63
+     */
+    int chosenSquare;
 
 
     bool isMoveLegal(int x1, int y1, int x2, int y2);
