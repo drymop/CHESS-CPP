@@ -24,6 +24,7 @@ class GUI
          * @param x1, y1, x2, y2 bounds of the box
          * @param value the value of the box. Value cannot be -1 or 0
          */
+        Box() {};
         Box(int x1, int y1, int x2, int y2, int value);
 
         /**

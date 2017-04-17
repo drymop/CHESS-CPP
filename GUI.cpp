@@ -23,8 +23,8 @@ GUI::Box::Box(int x1, int y1, int x2, int y2, int value)
   this->x2 = x2;
   this->y2 = y2;
   this->boxValue = value;
-  printf("Creating: ");
-  printBox();
+  //printf("Creating: ");
+  //printBox();
 }
 
 void GUI::Box::printBox()
@@ -35,8 +35,8 @@ void GUI::Box::printBox()
 bool GUI::Box::contains(int x, int y)
 {
   bool containP = ((x > x1) && (x < x2) && (y > y1) && (y < y2));
-  printf("Checking box %i %i %i %i with value ", x1, y1, x2, y2);
-  printf(containP? "True.\n": "False.\n");
+  //printf("Checking box %i %i %i %i with value ", x1, y1, x2, y2);
+  //printf(containP? "True.\n": "False.\n");
   return containP;
 }
 
@@ -44,10 +44,10 @@ void GUI::setBoxes(Box box[], int size)
 {
   this->boxes = box;
   this->numBox = size;
-  for(int i = 0; i < this->numBox; i++) {
+  /*for(int i = 0; i < this->numBox; i++) {
     printf("Setting: ");
     this->boxes[i].printBox();
-  }
+  }*/
 }
 
 void GUI::printAllBox()
@@ -60,9 +60,9 @@ void GUI::printAllBox()
 }
 int GUI::getMove()
 {
+  //printAllBox();
   //Get mouse coordinate
   SDL_Event e;
-
   while(SDL_PollEvent(&e) != 0)
   {
     if(e.type == SDL_QUIT)
@@ -73,7 +73,7 @@ int GUI::getMove()
     {
       int mouseX = e.button.x;
       int mouseY = e.button.y;
-      printf("mouse click at %i %i\n", mouseX, mouseY);
+      //printf("mouse click at %i %i\n", mouseX, mouseY);
 
       //Get box value
       for(int i = 0; i < numBox; i++)

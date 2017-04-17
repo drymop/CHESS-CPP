@@ -8,16 +8,16 @@
 #include <SDL_image.h>
 #include <stdio.h>
 
-#include <TextureWrapper.h>
 #include <BoardGUI.h>
+#include <Board.h>
 
 
 
 /**
  * Sizes and title of the game window
  */
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 700;
+const int SCREEN_HEIGHT = 700;
 const char* WINDOW_TITLE = "Chess Game by lmtuan";
 
 
@@ -45,20 +45,28 @@ int main(int argc, char* argv[])
   /**
    * Init GUIs
    */
+
+  Board b;
+
   BoardGUI bgui;
   bgui.initGUI(renderer);
-  bgui.draw(renderer);
+  bgui.draw(renderer, &b);
 
   int move = 0;
   do
   {
     move = bgui.getMove();
-    if (move == -1) {
+    if (move == 0) {
+      continue;
+    }
+    else if (move == -1)
+    {
       break;
-    } else if (move == 0) {
-
-    } else {
+    }
+    else
+    {
       printf("move is %i\n", move);
+      bgui.draw(renderer, &b);
     }
   }while(true);
 

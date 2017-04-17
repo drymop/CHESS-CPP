@@ -58,13 +58,27 @@ void TextureWrapper::destroyTexture()
   }
 }
 
-void TextureWrapper::render(SDL_Renderer* renderer, int x, int y, SDL_Rect* crop)
+void TextureWrapper::render(SDL_Renderer* renderer, int x, int y, SDL_Rect* crop, SDL_Rect* stretch)
 {
   SDL_Rect renderQuad = {x, y, textureWidth, textureHeight};
 
   if(crop != NULL) {
-    renderQuad.w = crop->w;
-    renderQuad.h = crop->h;
+    if (stretch == NULL)
+    {
+      renderQuad.w = crop->w;
+      renderQuad.h = crop->h;
+    }
+    else
+    {
+      renderQuad.w = stretch->w;
+      renderQuad.h = stretch->h;
+    }
+
   }
   SDL_RenderCopy(renderer, texture, crop, &renderQuad);
+}
+
+void TextureWrapper::render(SDL_Renderer* renderer, SDL_Rect* crop, SDL_Rect* dst)
+{
+  SDL_RenderCopy(renderer, texture, crop, dst);
 }
