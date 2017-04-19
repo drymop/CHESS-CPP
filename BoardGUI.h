@@ -37,6 +37,8 @@ class BoardGUI : public GUI
      * Background image, image of chessboard, image of chess pieces
      */
     TextureWrapper bgImg, boardImg, piecesSprite;
+    const static Uint8 ALPHA_FADED = 100;
+    const static Uint8 ALPHA_NORMAL = 255;
 
     /**
      * Coordinates of images of pieces on the sprite sheet

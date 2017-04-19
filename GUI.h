@@ -2,6 +2,11 @@
 #define GUI_H
 
 
+/**
+ * Contains an array of "box" (or click zones), each box has a distinct value
+ * Has function getMove() to return the value of box clicked
+ */
+
 class GUI
 {
   protected:

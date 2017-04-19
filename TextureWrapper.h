@@ -29,11 +29,6 @@ class TextureWrapper
     bool loadFromFile(SDL_Renderer* renderer, std::string path);
 
     /**
-     * Deallocate Texture
-     */
-    void destroyTexture();
-
-    /**
      * Enable image blending (opaque <-> transparent)
      * @param one of the SDL_BlendMode const
      */
@@ -65,8 +60,6 @@ class TextureWrapper
      */
     void render(SDL_Renderer* renderer, SDL_Rect* crop, SDL_Rect* dst);
 
-  protected:
-
   private:
     /**
      * The texture being wrapped
@@ -77,6 +70,11 @@ class TextureWrapper
      * Size of the texture
      */
     int textureHeight, textureWidth;
+
+    /**
+     * Deallocate Texture
+     */
+    void destroyTexture();
 };
 
 #endif // TEXTUREWRAPPER_H

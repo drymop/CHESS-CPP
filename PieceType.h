@@ -1,6 +1,7 @@
 #ifndef PIECETYPE_H_INCLUDED
 #define PIECETYPE_H_INCLUDED
 
+
 enum pieceType
 {
   BQ, BK, BR, BN, BB, BP,
