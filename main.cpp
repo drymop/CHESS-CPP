@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
   Board b;
 
   BoardGUI bgui;
+
   bgui.initGUI(renderer);
   bgui.draw(renderer, &b);
 

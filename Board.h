@@ -57,18 +57,27 @@ class Board
      * -1 if no chosen square, else 0 to 63
      */
     int chosenSquare;
-
-
+    /**
+     * Position of 2 kings, from 0 to 63
+     */
+    int kingSquares[2];
 
     int hitboxes[32][8][8];
-    enum moveType {
+    enum moveTypes {
       MOVE_ILLEGAL,
-      MOVE_SELF, //the square where the piece is
       MOVE_NORMAL,
-      MOVE_ENPASSANT,
+      MOVE_PROTECT,
+      MOVE_PAWN_DOUBLE_JUMP,
+      MOVE_PAWN_PROMOTION,
+      MOVE_PAWN_ENPASSANT,
       MOVE_CASTLING,
       MOVE_BEHIND_OBSTACLE //an illegal square of ray piece, directly after an obstacle
     };
+    /**
+     * ID of the pieces checking king
+     */
+    int checkingPieces[2];
+
     /**
      * 8 basic direction
      */
@@ -94,15 +103,29 @@ class Board
      * Fill a hitbox with move Types
      * @param pID: ID of piece
      */
-    void fillHitbox(int square);
+
+
+    void updateAll();
 
     /**
-     * Fill a hitbox of a specific type of piece with move types
+     * Fill a hitbox with move types (disregard king checking)
      */
+    void fillHitbox(int square);
     void fillHitboxPawn(int square, int pID);
     void fillHitboxKnight(int square, int pID);
     void fillHitboxKing(int square, int pID);
     void fillHitboxRayPieces(int square, int pID);
+
+    /**
+     * Fill a hitbox of the current player's king
+     * Call after every other hitboxes have been filled
+     */
+    void fillHitboxCurrentKing();
+
+    /**
+     * Compare hitboxes
+     */
+    void findCheck();
 };
 
 #endif // BOARD_H
