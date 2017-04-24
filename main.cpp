@@ -46,9 +46,9 @@ int main(int argc, char* argv[])
    * Init GUIs
    */
 
-  Board b;
-
   BoardGUI bgui;
+
+  Board b;
 
   bgui.initGUI(renderer);
   bgui.draw(renderer, &b);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-      printf("main: move is %i\n", move);
+      printf("\nmain: move is %i\n", move);
       b.chooseSquare(move-1);
       bgui.draw(renderer, &b);
     }

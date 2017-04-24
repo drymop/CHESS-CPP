@@ -15,11 +15,13 @@ const int Board::dirKnight[8][2] = { {1, 2}, {1, -2}, {-1, 2}, {-1, -2},
                                      {2, 1}, {2, -1}, {-2, 1}, {-2, -1} };
 
 void Board::initBoard(){
-  player = 2;
+  player = 1;
   chosenSquare = -1;
 
   kingSquares[0] = 4;
   kingSquares[1] = 60;
+  enPassantCols[0] = -1;
+  enPassantCols[1] = -1;
 
   /*
    * board after init
@@ -37,15 +39,17 @@ void Board::initBoard(){
    */
 
   // Fill board
-  // Fill all square with ID = 0 empty
+  // Fill all square with ID = 0 (empty)
   for(int i = 0; i < 64; i++)
   {
     board[i/8][i%8] = 0;
   }
+  // Fill all white ID
   for(int i = 0; i < 16; i++)
   {
     board[i/8][i%8] = i+1;
   }
+  // Fill all black ID
   for(int i = 16; i < 32; i++)
   {
     board[4 + i/8][i%8] = i+1;
@@ -91,20 +95,52 @@ int Board::getPiece(int square)
   return piece;
 }
 
+void Board::printHitbox()
+{
+  for (int p = 17; p <= 32; p++)
+  {
+    printf("pieceID %i\n", p);
+    for (int i = 7; i >= 0; i--)
+    {
+      for (int j = 0; j < 8; j++)
+      {
+        printf(" %i", hitboxes[p][i][j]);
+      }
+      printf("\n");
+    }
+  }
+  printf("\n");
+}
+void Board::printBoard()
+{
+  printf("Printing Board\n");
+  for (int i = 7; i >= 0; i--)
+  {
+    for (int j = 0; j < 8; j++)
+    {
+      printf(" %i", board[i][j]);
+    }
+    printf("\n");
+  }
+}
+
 void Board::chooseSquare(int square)
 {
-  // if click somewhere else, unchoose the square
-  if (square < 0 || square > 63 || square == chosenSquare)
+  printf("Board chooseSquare %i\n", square);
+  // if choose the same square or click somewhere else, unchoose the square
+  if (square == chosenSquare || square < 0 || square > 63)
   {
     chosenSquare = -1;
   }
   else
   {
-    if(chosenSquare == -1)
+    if(chosenSquare == -1) // if currently no square is selected
     {
-      if (board[square/8][square%8] > 0)
+      int pieceID = board[square/8][square%8];
+      if ( (pieceID > 0) && ((pieceID <= 16) == (player == 1)) )
       {
         chosenSquare = square;
+        printf("update chosen square\n");
       }
     }
     else
@@ -112,47 +148,54 @@ void Board::chooseSquare(int square)
       makeMove(chosenSquare/8, chosenSquare%8, square/8, square%8);
       chosenSquare = -1;
     }
+    printf("Board chosen square %i\n", chosenSquare);
   }
 }
 
-bool Board::makeMove(int x1,int y1,int x2,int y2)
+void Board::makeMove(int x1,int y1,int x2,int y2)
 {
-    int pieceID = board[x1][y1];
-    // choose an empty square
-    if (pieceID <= 0) return false;
-    // choose an opponent's piece
-    if ((player == 1) != (pieceID <= 16)) return false;
+  int pieceID = board[x1][y1];
 
-    int moveType = hitboxes[pieceID][x2][y2];
-    if (moveType == MOVE_NORMAL || moveType == MOVE_PAWN_DOUBLE_JUMP)
-    {
-      board[x2][y2] = board[x1][y1];
-      board[x1][y1] = 0;
-      updateAll();
-      return true;
-    }
-    return false;
-}
+  int moveType = hitboxes[pieceID][x2][y2];
+  if (moveType == MOVE_NORMAL || moveType == MOVE_PAWN_DOUBLE_JUMP)
+  {
+    // make move
+    board[x2][y2] = board[x1][y1];
+    board[x1][y1] = 0;
 
-bool Board::isMoveLegal(int x1, int y1, int x2, int y2)
-{
-    return true;
+    // update en passant possibilities
+    // if there is a double jump, possible en passant move for opponent
+    enPassantCols[2 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
+
+    // update castling possibilities
+
+    // change player
+    player = 3 - player;
+    // update hitboxes (all potential moves)
+    updateAll();
+  }
+  else if (moveType == MOVE_PAWN_ENPASSANT)
+  {
+    board[x2][y2] = board[x1][y1];
+    board[x1][y1] = 0;
+    board[x1][y2] = 0;
+    // change player
+    player = 3 - player;
+    updateAll();
+  }
 }
 
 
 void Board::updateAll()
 {
-  // change player
-  player = 3 - player;
-  printf("get to here\n");
   // update all hitboxes (without caring about check)
   for (int i = 0; i < 64; i++)
   {
     fillHitbox(i);
   }
-  fillHitboxCurrentKing();
+  //printHitbox();
+  //fillHitboxCurrentKing();
   // compare hitbox for check
-
 }
 
 void Board::fillHitbox(int square)
@@ -190,24 +233,22 @@ void Board::fillHitboxPawn(int square, int pID)
       }
   }
 
-  /*
-   * Move straight, capture diagonal
-   */
   int moveForward = (pID <= 16)? 1: -1;
   int r = square/8;
   int c = square%8;
 
-  bool canPromote;
-  bool canDoubleJump;
-  //bool canEnpassant;
-
-  //consider one square ahead
+  /*
+   * Move straight
+   */
+  // Consider one square ahead
   i = r + moveForward;
   j = c;
-  canPromote = (i == 0) || (i == 7);
-  canDoubleJump = (i == 2 || i == 5);
 
-  if (board[i][j] = 0) //empty square in front
+  bool canPromote = (i == 0) || (i == 7);
+  bool canDoubleJump = (i == 2 || i == 5);;
+  bool canEnPassant = (r == 3 && player == 2) || (r == 4 && player == 1);
+
+  if (board[i][j] == 0) //empty square in front
   {
     hitboxes[pID][i][j] = canPromote? MOVE_PAWN_PROMOTION: MOVE_NORMAL;
   }
@@ -216,31 +257,45 @@ void Board::fillHitboxPawn(int square, int pID)
     canDoubleJump = false;
   }
 
-  // double jump
+  // Consider 2 square ahead - double jump
   i += moveForward;
   if (canDoubleJump && board[i][j] == 0) //if can double jump and the 2 square ahead is empty
   {
     hitboxes[pID][i][j] = MOVE_PAWN_DOUBLE_JUMP;
   }
 
-  //consider diagonal squares
+  /*
+   * Capture diagonally and en passant
+   */
+  // Diagonally to the left
   i = r + moveForward;
   j = c-1;
   if (j >= 0 && j < 8)
   {
-    if (board[i][j] == 0 || (board[i][j] <= 16) == (board[r][c] <= 16))
+    if (canEnPassant && j == enPassantCols[player-1]) // if in the correct row and correct col, can en passant
+    {
+      printf("Can enpassant!");
+      hitboxes[pID][i][j] = MOVE_PAWN_ENPASSANT;
+    }
+    else if (board[i][j] == 0 || (board[i][j] <= 16) == (board[r][c] <= 16)) // if square is empty or has same color, can protect
     {
       hitboxes[pID][i][j] = MOVE_PROTECT;
     }
-    else
+    else // if has opponent, can move
     {
       hitboxes[pID][i][j] = MOVE_NORMAL;
     }
   }
+  // Diagonally to the right
   j = c+1;
   if (j >= 0 && j < 8)
   {
-    if (board[i][j] == 0 || (board[i][j] <= 16) == (board[r][c] <= 16))
+    if (canEnPassant && j == enPassantCols[player-1])
+    {
+      hitboxes[pID][i][j] = MOVE_PAWN_ENPASSANT;
+      printf("Can enpassant!");
+    }
+    else if (board[i][j] == 0 || (board[i][j] <= 16) == (board[r][c] <= 16))
     {
       hitboxes[pID][i][j] = MOVE_PROTECT;
     }
@@ -309,11 +364,11 @@ void Board::fillHitboxRayPieces(int square, int pID)
   switch(pieces[pID])
   {
     case WR: case BR:
-      minDir = 0; maxDir = 3;
+      minDir = 0; maxDir = 3; break;
     case WB: case BB:
-      minDir = 4; maxDir = 7;
+      minDir = 4; maxDir = 7; break;
     case WQ: case BQ:
-      minDir = 0; maxDir = 7;
+      minDir = 0; maxDir = 7; break;
    }
    /*
     * Look into all directions
