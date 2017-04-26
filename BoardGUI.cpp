@@ -4,8 +4,9 @@
 
 #include <stdio.h>
 
-BoardGUI::BoardGUI()
+BoardGUI::BoardGUI(Board* brd)
 {
+  this->b = brd;
   Box* boxArr = new Box[64];
   for(int i = 0; i < 64; i++) {
     int x = 54 + (i%8) * 590 / 8;
@@ -17,9 +18,9 @@ BoardGUI::BoardGUI()
 
 void BoardGUI::initGUI(SDL_Renderer* renderer)
 {
-  bool loadBoard = boardImg.loadFromFile(renderer, "img/board.jpg");
+  boardImg.loadFromFile(renderer, "img/board.jpg");
   //if (!loadBoard) printf("null chessboared");
-  bool loadPiece = piecesSprite.loadFromFile(renderer, "img/pieces.png");
+  piecesSprite.loadFromFile(renderer, "img/pieces.png");
   //if(!loadPiece) printf("null piece");
   piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND);
 
@@ -36,8 +37,9 @@ void BoardGUI::initGUI(SDL_Renderer* renderer)
 
 }
 
-void BoardGUI::draw(SDL_Renderer* renderer, Board* brd)
+void BoardGUI::draw(SDL_Renderer* renderer)
 {
+  printf("GUI drawing\n");
   // Clear screen with white color
   SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
   SDL_RenderClear( renderer );
@@ -52,7 +54,7 @@ void BoardGUI::draw(SDL_Renderer* renderer, Board* brd)
   // Draw all chess pieces from board
   for (int i = 0; i < 64; i++)
   {
-    int piece = brd->getPiece(i);
+    int piece = b->getPiece(i);
     if (piece >= 0 && piece < 12)
     {
       // if piece is not chosen, draw as normal
@@ -61,12 +63,14 @@ void BoardGUI::draw(SDL_Renderer* renderer, Board* brd)
     else if (piece >= 12)
     {
       // if piece is chosen, draw it half transparent
-      Uint8 alpha = 100;
       piecesSprite.setTransparency(ALPHA_FADED);
       piecesSprite.render(renderer, &pieceClips[piece-12], &boardSquares[i]);
-      alpha = 255;
       piecesSprite.setTransparency(ALPHA_NORMAL);
     }
   }
   SDL_RenderPresent(renderer);
+  if (renderer == NULL)
+  {
+    printf("gui draw null renderer\n");
+  }
 }

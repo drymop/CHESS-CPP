@@ -46,12 +46,11 @@ int main(int argc, char* argv[])
    * Init GUIs
    */
 
-  BoardGUI bgui;
-
   Board b;
+  BoardGUI bgui(&b);
 
   bgui.initGUI(renderer);
-  bgui.draw(renderer, &b);
+  bgui.draw(renderer);
 
   int move = 0;
   do
@@ -68,7 +67,7 @@ int main(int argc, char* argv[])
     {
       printf("\nmain: move is %i\n", move);
       b.chooseSquare(move-1);
-      bgui.draw(renderer, &b);
+      bgui.draw(renderer);
     }
   }while(true);
 

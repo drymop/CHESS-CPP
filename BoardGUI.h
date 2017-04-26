@@ -12,7 +12,7 @@ class BoardGUI : public GUI
     /**
      * Create an array of box and pass it to parent class GUI through GUI.setBoxes()
      */
-    BoardGUI();
+    BoardGUI(Board* brd);
     /**
      * Load images to use in game (in the form of TextureWrapper)
      * @param renderer the renderer of the window to be drawn on
@@ -29,13 +29,14 @@ class BoardGUI : public GUI
      * draw the chessboard screen
      * @param renderer the renderer of the window to be drawn on
      */
-    void draw(SDL_Renderer* renderer, Board* brd);
+    void draw(SDL_Renderer* renderer);
 
   private:
     /**
      * The TextureWrapper contains images used in display
      * Background image, image of chessboard, image of chess pieces
      */
+    Board* b;
     TextureWrapper bgImg, boardImg, piecesSprite;
     const static Uint8 ALPHA_FADED = 100;
     const static Uint8 ALPHA_NORMAL = 255;
