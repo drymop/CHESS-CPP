@@ -1,10 +1,13 @@
 #ifndef GUI_H
 #define GUI_H
 
+#include <SDL.h>
+
 
 /**
- * Contains an array of "box" (or click zones), each box has a distinct value
+ * Abstract class contains an array of "box" (or click zones), each box has a distinct value
  * Has function getMove() to return the value of box clicked
+ * Derive this cl
  */
 
 class GUI
@@ -61,7 +64,7 @@ class GUI
     /**
      * Draw the GUI on the screen
      */
-    virtual void draw() = 0;
+    virtual void draw(SDL_Renderer* renderer) = 0;
     void printAllBox();
   private:
     Box* boxes;

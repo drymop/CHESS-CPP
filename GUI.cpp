@@ -1,5 +1,4 @@
 #include "GUI.h"
-#include <SDL.h>
 #include <stdio.h>
 
 GUI::GUI()

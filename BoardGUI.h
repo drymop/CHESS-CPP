@@ -20,12 +20,6 @@ class BoardGUI : public GUI
     void initGUI(SDL_Renderer* renderer);
 
     /**
-     * Use to satisfy GUI requirement only
-     * Should not be called
-     */
-    void draw() {};
-
-    /**
      * draw the chessboard screen
      * @param renderer the renderer of the window to be drawn on
      */
