@@ -138,9 +138,25 @@ private:
   void fillHitboxCurrentKing();
 
   /**
-   * Compare hitboxes
+   * Compare hitboxes to find checks and update hitboxes
    */
   void findCheck();
+
+  /**
+   * Call when there are 2 pieces checking king
+   * All player's hitboxes become illegal
+   */
+  void updateDoubleCheck();
+  /**
+   *
+   */
+  void updateSingleCheck();
+
+  /**
+   * Check if 3 squares are in a line, in same order
+   */
+  bool isInRay(int x1, int y1, int x2, int y2, int x3, int y3);
+
 };
 
 #endif // BOARD_H

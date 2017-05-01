@@ -97,7 +97,7 @@ int Board::getPiece(int square)
 
 void Board::printHitbox()
 {
-  for (int p = 17; p <= 32; p++)
+  for (int p = 1; p <= 32; p++)
   {
     printf("pieceID %i\n", p);
     for (int i = 7; i >= 0; i--)
@@ -168,6 +168,10 @@ void Board::makeMove(int x1,int y1,int x2,int y2)
     enPassantCols[2 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
 
     // update castling possibilities
+    if (x1*8+y1 == kingSquares[player -1])
+    {
+      kingSquares[player-1] = x2*8+y2;
+    }
 
     // change player
     player = 3 - player;
@@ -193,9 +197,11 @@ void Board::updateAll()
   {
     fillHitbox(i);
   }
-  //printHitbox();
-  //fillHitboxCurrentKing();
-  // compare hitbox for check
+  fillHitboxCurrentKing();
+
+  // find check
+  findCheck();
+  printHitbox();
 }
 
 void Board::fillHitbox(int square)
@@ -471,6 +477,7 @@ void Board::fillHitboxCurrentKing()
     maxPiece = 16;
     kingID = 29;
   }
+  printf("Board currKing kingID %i\n", kingID);
 
   /*
    * Fill hitbox with illegal moves
@@ -511,11 +518,21 @@ void Board::fillHitboxCurrentKing()
     }
 
     //If square is not controlled by the opponent, king can go as long as there is no same color piece there
-    hitboxes[kingID][i][j] = ((board[i][j] <= 16) == (kingID <= 16))? MOVE_PROTECT : MOVE_NORMAL;
+    if (board[i][j] == 0 || (board[i][j] > 16) != (kingID > 16))
+    {
+      hitboxes[kingID][i][j] = MOVE_NORMAL;
+    }
+    else
+    {
+      hitboxes[kingID][i][j] = MOVE_PROTECT;
+    }
   }
 }
 void Board::findCheck()
 {
+  /*
+   * Find at most 2 checking pieces
+   */
   checkingPieces[0] = 0;
   checkingPieces[1] = 0;
 
@@ -537,6 +554,7 @@ void Board::findCheck()
   // find checking pieces
   for(int p = minPiece; p <= maxPiece; p++)
   {
+    // if opponent piece can capture king
     if(hitboxes[p][rK][cK] == MOVE_NORMAL || hitboxes[p][rK][cK] == MOVE_PAWN_PROMOTION)
     {
       if (checkingPieces[0] != 0)
@@ -550,4 +568,97 @@ void Board::findCheck()
       }
     }
   }
+
+  /*
+   * Update hitboxes
+   */
+
+  if (checkingPieces[1] != 0) //has 2 checking pieces
+  {
+    updateDoubleCheck();
+  }
+  else if (checkingPieces[0] != 0) //has 1 checking piece
+  {
+    updateSingleCheck();
+  }
+}
+
+void Board::updateDoubleCheck()
+{
+  int minPiece = (player == 1)? 1 : 17;
+  int maxPiece = (player == 1)? 16 : 32;
+  for (int p = minPiece; p <= maxPiece; p++)
+  {
+    // ignore king
+    if (p == 5 || p == 29) continue;
+    for (int i = 0; i < 8; i++)
+    {
+      for (int j = 0; j < 8; j++)
+      {
+        hitboxes[p][i][j] = MOVE_ILLEGAL;
+      }
+    }
+  }
+}
+
+void Board::updateSingleCheck()
+{
+  int minPiece = (player == 1)? 1 : 17;
+  int maxPiece = (player == 1)? 16 : 32;
+
+  bool rayCheckingPiece =  pieces[checkingPieces[0]] == WQ ||
+                           pieces[checkingPieces[0]] == BQ ||
+                           pieces[checkingPieces[0]] == WB ||
+                           pieces[checkingPieces[0]] == BB ||
+                           pieces[checkingPieces[0]] == WR ||
+                           pieces[checkingPieces[0]] == BR;
+
+
+  for (int p = minPiece; p <= maxPiece; p++)
+  {
+    if (p == 5 || p == 29) continue; //ignore king
+    for (int i = 0; i < 8; i++)
+    {
+      for (int j = 0; j < 8; j++)
+      {
+        if(hitboxes[p][i][j] == MOVE_NORMAL || hitboxes[p][i][j] == MOVE_PAWN_DOUBLE_JUMP || hitboxes[p][i][j] == MOVE_PAWN_PROMOTION) //i j is a possile move of p
+        {
+          if (board[i][j] = checkingPieces[0]) continue; //capture checking piece
+          if (rayCheckingPiece) // if checking piece is a ray piece, can move between checking piece and king
+          {
+            //find coordinate of checking piece
+            bool canInterrupt = false;
+            for (int s = 0; s < 64; s++)
+            {
+              if (board[s/8][s%8] == checkingPieces[0])
+              {
+                canInterrupt = isInRay(s/8, s%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8);
+                break;
+              }
+            }
+            if (canInterrupt) continue;
+          }
+          printf("Board singleCheck illegal move\n");
+          hitboxes[p][i][j] = MOVE_PROTECT;
+        }
+      }
+    }
+  }
+}
+
+bool Board::isInRay(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+  if(x1 == x3) // same row
+  {
+    if (x2 == x3 && ((y2 > y1 && y2 < y3) || (y2 < y1 && y2 > y3)) ) return true;//if in line and square 2 is in the middle
+  }
+  else if (y1 == y3) // same col
+  {
+    if (y2 == y3 && ((x2 > x1 && x2 < x3) || (x2 < x1 && x2 > x3)) ) return true;//if in line and square 2 is in the middle
+  }
+  else if ( (x2 - x1)*(y3-y1) == (y2 - y1)*(x3-x1) ) // same diagonal
+  {
+    if ((x2 > x1 && x2 < x3) || (x2 < x1 && x2 > x3)) return true;
+  }
+  return false;
 }
