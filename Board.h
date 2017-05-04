@@ -1,6 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include <vector>
 
 class Board
 {
@@ -40,6 +41,11 @@ public:
 
 private:
   /**
+   * List of possible moves
+   */
+  std::vector<int> moveList;
+
+  /**
    * Contains the ID of pieces on chessboard
    * Index: row and column
    * Value: ID of piece
@@ -69,9 +75,14 @@ private:
    */
   int kingSquares[2];
   /**
-   * ID of the pieces checking king. There can be at most 2 pieces. 0 if no piece is checking.
+   * Square the pieces checking king. There can be at most 2 pieces. -1 if no piece is checking.
    */
   int checkingPieces[2];
+  /**
+   * Squares of the pinned and pinning pieces alternately
+   * Even index: pinned pieces, odd index: pinning pieces
+   */
+  std::vector<int> pinPieces;
   /**
    * The cols of last double jump pawns of opponent, value from 0 to 63, -1 if last move is not a double jump
    * Use for enpassant checking
@@ -93,12 +104,12 @@ private:
    * @param white: true if checking player white's control
    * @return true if square is controlled
    */
-  bool isSquareControlled(int square, bool white);
+  bool isSquareControlled(int square);
 
   /**
    * Check if king is checked by opponent, and if any piece is pinned
    */
-  void kingSafety();
+  void findPinAndCheck();
 
   /**
    * Check if 3 squares are in a line, in same order

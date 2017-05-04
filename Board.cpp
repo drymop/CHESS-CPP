@@ -24,7 +24,10 @@ void Board::initBoard(){
   enPassantCols[0] = -1;
   enPassantCols[1] = -1;
 
-
+  moveList.clear();
+  moveList.reserve(150);
+  pinPieces.clear();
+  pinPieces.reserve(6);
 
   // Fill board
   // Fill all squares with -1 (empty)
@@ -112,37 +115,17 @@ void Board::makeMove(int x1,int y1,int x2,int y2)
   board[x1][y1] = -1;
 }
 
-void Board::kingSafety()
+void Board::findPinAndCheck()
 {
+  // Position of King
   int r = kingSquares[player-1] / 8;
   int c = kingSquares[player-1] % 8;
   int i,j;
 
-  // Check 8 knight's move
-  for (int d = 0; d < 8; d++)
-  {
-    i = r + dirKnight[d][0];
-    j = c + dirKnight[d][1];
-    // if out of bound, check other directions
-    if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
-    if (player == 1)
-    {
-      if (board[i][j] == WN)
-      {
-          //TO DO
-      }
-    }
-    else
-    {
-      if (board[i][j] == BN)
-      {
-        //TO DO
-      }
-    }
-  }
   // Check 8 basic direction
   for(int d = 0; d <= 8; d++)
   {
+    int pinnedSquare = -1;
     i = r;
     j = c;
     while(true)
@@ -154,76 +137,105 @@ void Board::kingSafety()
       if (i < 0 || i > 7 || j < 0 || j > 7) break;
       // if empty square, advance 1 more square
       if (board[i][j] == -1) continue;
-      // if there is a piece
-      if (true)
+      if (pinnedSquare == -1) // the first obstacle
       {
-        switch(board[i][j])
+        if ( (player == 1) == (board[i][j] > 5) ) // if it's current player's piece
         {
-          case WQ: return true;
-          case WR:
-            if (d < 4) return true;
-            break;
-          case WB:
-            if (d > 3) return true;
-            break;
+          pinnedSquare = i * 8 + j;
+        }
+        else // if it's opponent's piece
+        {
+          // Check if it's checking current king
+          int curPiece = board[i][j];
+          if (curPiece < 6) curPiece += 6; // turn into white for easy switch
+          if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB))
+          {
+            int checkIndex = (checkingPieces[0] == -1)? 0 : 1;
+            checkingPieces[checkIndex] = i * 8 + j;
+          }
+          break;
         }
       }
-      else
+      else // the second obstacle
       {
-        switch(board[i][j])
+        if ( (player == 1) != (board[i][j] > 5) ) // if it's opponent's piece
         {
-          case BQ: return true;
-          case BR:
-            if (d < 4) return true;
-            break;
-          case BB:
-            if (d > 3) return true;
-            break;
+          int curPiece = board[i][j];
+          if (curPiece < 6) curPiece += 6; // turn into white for easy switch
+          if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB)) // if it's opponent's ray piece
+          {
+            pinPieces.push_back(pinnedSquare);
+            pinPieces.push_back(i* 8 + j);
+          }
         }
+        break;
       }
-      // if get here, already met obstacle. Stop looking in this direction
-      break;
     }
   }
+
+  if (checkingPieces[1] != -1) return;
+
+  // Check 8 knight's move
+  for (int d = 0; d < 8; d++)
+  {
+    i = r + dirKnight[d][0];
+    j = c + dirKnight[d][1];
+    // if out of bound, check other directions
+    if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
+
+    if (board[i][j] == (player == 1? BN : WN) ) // if has opponent's knight
+    {
+      int t = (checkingPieces[0] == -1)? 0 : 1;
+      checkingPieces[t] = i * 8 + j;
+      // if there are 2 checking pieces, that's max
+      if (t == 1) return;
+    }
+  }
+
   // Check pawn's move
-  i = white? (r - 1) : (r + 1);
-  j = c - 1;
+  i = (player == 1)? (r + 1) : (r - 1);
+  j = c - 1; // The left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (white? WP:BP)) return true;
+    if ( board[i][j] == (player == 1? BP:WP) )
+    {
+      int t = (checkingPieces[0] == -1)? 0 : 1;
+      checkingPieces[t] = i * 8 + j;
+      if (t == 1) return;
+    }
   }
-  j = c + 1;
+  j = c + 1; // The right column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (white? WP:BP)) return true;
+    if (board[i][j] == (player == 1? BP:WP))
+    {
+      int t = (checkingPieces[0] == -1)? 0 : 1;
+      checkingPieces[t] = i * 8 + j;
+    }
   }
-  // if pass all tests, square is not controlled
-  return false;
 }
 
-bool Board::isSquareControlled(int square, bool white)
+bool Board::isSquareControlled(int square)
 {
   int r = square / 8;
   int c = square % 8;
   int i,j;
 
-  // Check 8 knight's move
+  /*
+   * Check 8 knight's move
+   */
   for (int d = 0; d < 8; d++)
   {
     i = r + dirKnight[d][0];
     j = c + dirKnight[d][1];
     // if out of bound, check other directions
     if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
-    if (white)
-    {
-      if (board[i][j] == WN) return true;
-    }
-    else
-    {
-      if (board[i][j] == BN) return true;
-    }
+    if (board[i][j] == (player == 1? BN : WN) ) return true;
   }
-  // Check 8 basic direction
+
+  /*
+   * Check 8 ray directions
+   */
   for(int d = 0; d <= 8; d++)
   {
     i = r;
@@ -237,49 +249,29 @@ bool Board::isSquareControlled(int square, bool white)
       if (i < 0 || i > 7 || j < 0 || j > 7) break;
       // if empty square, advance 1 more square
       if (board[i][j] == -1) continue;
-      // if there is a piece
-      if (white)
+      // if it is opponent's ray piece
+      if ( (player == 1) != (board[i][j] > 5) )
       {
-        switch(board[i][j])
-        {
-          case WQ: return true;
-          case WR:
-            if (d < 4) return true;
-            break;
-          case WB:
-            if (d > 3) return true;
-            break;
-        }
+        int curPiece = board[i][j];
+        if (curPiece < 6) curPiece += 6; //turn into whiteint curPiece = board[i][j];
+        if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB)) return true;
       }
-      else
-      {
-        switch(board[i][j])
-        {
-          case BQ: return true;
-          case BR:
-            if (d < 4) return true;
-            break;
-          case BB:
-            if (d > 3) return true;
-            break;
-        }
-      }
-      // if get here, already met obstacle. Stop looking in this direction
       break;
     }
   }
   // Check pawn's move
-  i = white? (r - 1) : (r + 1);
-  j = c - 1;
+  i = (player == 1)? (r + 1) : (r - 1);
+  j = c - 1; // left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (white? WP:BP)) return true;
+    if (board[i][j] == (player == 1? BP : WP)) return true;
   }
   j = c + 1;
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (white? WP:BP)) return true;
+    if (board[i][j] == (player == 1? BP : WP)) return true;
   }
+
   // if pass all tests, square is not controlled
   return false;
 }
