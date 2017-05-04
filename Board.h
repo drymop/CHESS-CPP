@@ -9,10 +9,6 @@ public:
   ~Board();
 
   /**
-   * For debugging purpose. Print to console all hitboxes.
-   */
-  void printHitbox();
-  /**
    * For debugging purpose. Print to console board array
    */
   void printBoard();
@@ -49,19 +45,6 @@ private:
    * Value: ID of piece
    */
   int board[8][8];
-  /**
-   * Contains the type of pieces on chessboard
-   * Index: ID of piece, index 0 is empty piece
-   * Value: Type of piece (according to enum pieceTypes)
-   */
-  int pieces[33];
-
-  /**
-   * Contains all potential moves of pieces
-   * Index: ID of piece, row, collumn
-   * Value: type of move
-   */
-  int hitboxes[33][8][8];
 
   /**
    * 1 is the first player, 2 is the second player
@@ -81,19 +64,6 @@ private:
    */
   void makeMove(int x1,int y1,int x2,int y2);
 
-  /**
-   * Types of move in hitbox
-   */
-  enum moveTypes {
-    MOVE_ILLEGAL,
-    MOVE_NORMAL,
-    MOVE_PROTECT,
-    MOVE_PAWN_DOUBLE_JUMP,
-    MOVE_PAWN_PROMOTION,
-    MOVE_PAWN_ENPASSANT,
-    MOVE_CASTLING,
-    MOVE_BEHIND_OBSTACLE
-  };
   /**
    * Position of 2 kings, value from 0 to 63
    */
@@ -118,39 +88,17 @@ private:
   static const int dirKnight[8][2];
 
   /**
-   * Fill all hitboxes with moves. Call after making a move.
+   * Check if a square is controlled by a player
+   * @param square: the square number, from 0 to 63
+   * @param white: true if checking player white's control
+   * @return true if square is controlled
    */
-  public: void updateAll();
+  bool isSquareControlled(int square, bool white);
 
   /**
-   * Fill a hitbox (disregard king checking)
+   * Check if king is checked by opponent, and if any piece is pinned
    */
-  void fillHitbox(int square);
-  void fillHitboxPawn(int square, int pID);
-  void fillHitboxKnight(int square, int pID);
-  void fillHitboxKing(int square, int pID);
-  void fillHitboxRayPieces(int square, int pID);
-
-  /**
-   * Fill a hitbox of the current player's king
-   * Call after every other hitboxes have been filled
-   */
-  void fillHitboxCurrentKing();
-
-  /**
-   * Compare hitboxes to find checks and update hitboxes
-   */
-  void findCheck();
-
-  /**
-   * Call when there are 2 pieces checking king
-   * All player's hitboxes become illegal
-   */
-  void updateDoubleCheck();
-  /**
-   *
-   */
-  void updateSingleCheck();
+  void kingSafety();
 
   /**
    * Check if 3 squares are in a line, in same order
