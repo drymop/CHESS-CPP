@@ -65,10 +65,8 @@ int main(int argc, char* argv[])
     }
     else
     {
-      printf("\nmain: move is %i\n", move);
       b.chooseSquare(move-1);
       bgui.draw(renderer);
-      b.printHitbox();
     }
   }while(true);
 
