@@ -161,7 +161,25 @@ void Board::makeMove(int square1,int square2)
   }
   else if (moveType == MOVE_CASTLING)
   {
-
+    switch (square2)
+    {
+      case 2:
+        board[0][3] = WR;
+        board[0][0] = -1;
+        break;
+      case 6:
+        board[0][5] = WR;
+        board[0][7] = -1;
+        break;
+      case 58:
+        board[7][3] = BR;
+        board[7][0] = -1;
+        break;
+      case 62:
+        board[7][5] = BR;
+        board[7][7] = -1;
+        break;
+    }
   }
   else if (moveType == MOVE_PAWN_PROMOTION)
   {
