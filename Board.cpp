@@ -16,8 +16,8 @@ const int Board::dirKnight[8][2] = { {1, 2}, {1, -2}, {-1, 2}, {-1, -2},
                                      {2, 1}, {2, -1}, {-2, 1}, {-2, -1} };
 
 void Board::initBoard(){
-  player = 1;
-  chosenSquare = -1;
+  player = 1; // white player go first
+  chosenSquare = -1; // no chosen square yet
 
   kingSquares[0] = 4;
   kingSquares[1] = 60;
@@ -25,9 +25,9 @@ void Board::initBoard(){
   enPassantCols[1] = -1;
 
   moveList.clear();
-  moveList.reserve(150);
+  moveList.reserve(100); //around 30 moves
   pinPieces.clear();
-  pinPieces.reserve(6);
+  pinPieces.reserve(8); // 4 pairs of pinned and pinning pieces
 
   // Fill board
   // Fill all squares with -1 (empty)
@@ -278,17 +278,6 @@ bool Board::isSquareControlled(int square)
 
 bool Board::isInRay(int x1, int y1, int x2, int y2, int x3, int y3)
 {
-  if(x1 == x3) // same row
-  {
-    if (x2 == x3 && ((y2 > y1 && y2 < y3) || (y2 < y1 && y2 > y3)) ) return true;//if in line and square 2 is in the middle
-  }
-  else if (y1 == y3) // same col
-  {
-    if (y2 == y3 && ((x2 > x1 && x2 < x3) || (x2 < x1 && x2 > x3)) ) return true;//if in line and square 2 is in the middle
-  }
-  else if ( (x2 - x1)*(y3-y1) == (y2 - y1)*(x3-x1) ) // same diagonal
-  {
-    if ((x2 > x1 && x2 < x3) || (x2 < x1 && x2 > x3)) return true;
-  }
-  return false;
+  return ((x1 - x2) * (y1 - y3) == (x1 - x3) * (y1 - y2)) // 3 squares are in a line
+         && ((x2 >= x1 && x2 < x3) || (x2 <= x1 && x2 > x3)); // square 2 is in the middle
 }

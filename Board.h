@@ -41,24 +41,26 @@ public:
 
 private:
   /**
-   * List of possible moves
-   */
-  std::vector<int> moveList;
-
-  /**
-   * Contains the ID of pieces on chessboard
-   * Index: row and column
-   * Value: ID of piece
+   * Contains the pieces on chessboard
+   * Values of pieces are indicated in pieceTypes enum (in pieceType.h)
+   * The first index is the row number, and the second index is the column (from 0 -> 7)
    */
   int board[8][8];
 
   /**
-   * 1 is the first player, 2 is the second player
+   * The current player. Can be 1 or 2 (for white or black)
    */
   int player;
 
   /**
-   * The square chosen by player
+   * List of possible moves
+   * Each moves use 3 ints: starting square, ending square (0 -> 63), and the type of move
+   */
+  std::vector<int> moveList;
+
+  /**
+   * The square chosen by current player
+   * Used to display chosen piece on screen
    * -1 if no chosen square, else 0 to 63
    */
   int chosenSquare;
@@ -71,11 +73,11 @@ private:
   void makeMove(int x1,int y1,int x2,int y2);
 
   /**
-   * Position of 2 kings, value from 0 to 63
+   * Position of white and black king, value from 0 to 63
    */
   int kingSquares[2];
   /**
-   * Square the pieces checking king. There can be at most 2 pieces. -1 if no piece is checking.
+   * Squares of the pieces that are checking king. There can be at most 2 pieces. -1 if no piece is checking.
    */
   int checkingPieces[2];
   /**
@@ -99,20 +101,52 @@ private:
   static const int dirKnight[8][2];
 
   /**
-   * Check if a square is controlled by a player
-   * @param square: the square number, from 0 to 63
-   * @param white: true if checking player white's control
-   * @return true if square is controlled
-   */
-  bool isSquareControlled(int square);
-
-  /**
-   * Check if king is checked by opponent, and if any piece is pinned
+   * Check if king is checked by opponent, and if any piece is pinned.
+   * The results are saved in checkingPieces and pinPieces array.
    */
   void findPinAndCheck();
 
   /**
-   * Check if 3 squares are in a line, in same order
+   * Update the list of available move (stored in moveList vector).
+   * Should be called after making a move.
+   */
+  void updatMoveList();
+
+  /**
+   * Add all available king moves (including castling) to moveList vector.
+   */
+  void updateKingMoves();
+
+  /**
+   * Add all available moves of a ray piece to moveList vector.
+   * @param square: the square of the ray piece (0 -> 63).
+   */
+  void updateRayMoves(int square);
+
+  /**
+   * Add all available moves of a knight to moveList vector.
+   * @param square: the square of the knight (0 -> 63).
+   */
+  void updateKnightMoves(int square);
+
+  /**
+   * Add all available moves of a pawn to moveList vector.
+   * @param square: the square of the pawn (0 -> 63).
+   */
+  void updatePawnMoves(int square);
+
+  /**
+   * Check if a square is controlled by the opponent.
+   * @param square: the square number, from 0 to 63.
+   * @return true if square is controlled.
+   */
+  bool isSquareControlled(int square);
+
+  /**
+   * Check if 3 squares are in a line, in the given order.
+   * Use to check for legal move when king is checked, or a piece is pinned.
+   * @param x1 y1 x2 y2 x3 y3: the rows and columns of 3 squares.
+   * @return true if square 2 is between square 1 and square 3 in a line, or if square 1 and 2 are the same square.
    */
   bool isInRay(int x1, int y1, int x2, int y2, int x3, int y3);
 
