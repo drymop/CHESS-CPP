@@ -91,6 +91,12 @@ private:
    */
    int enPassantCols[2];
 
+   /**
+    * Order: king, left rook, right rook. The even flags are for white, and the odds black
+    * True if the piece has not moved, false otherwise
+    */
+   bool castlingFlags[6];
+
   /**
    * 8 basic directions
    */

@@ -128,16 +128,15 @@ void Board::updateMoveList()
       // if square is empty, or has opponent's piece, do not update
       if (board[i][j] < 0 || ((player == 1) == (board[i][j] < 6))) continue;
       // if square has friendly piece, update
-      int piece = board[i][j];
-      if (player == 2) piece += 6; //change piece to white if it's black, for ease of comparison
-      switch (piece)
+      int pType = board[i][j] %6; // don't care about color
+      switch (pType)
       {
-        case WP: updatePawnMoves(i, j); break;
-        case WQ:
-        case WR:
-        case WB: updateRayMoves(i, j); break;
-        case WN: updateKnightMoves(i, j); break;
-        case WK: updateKingMoves(i, j);
+        case BP: updatePawnMoves(i, j); break;
+        case BQ:
+        case BR:
+        case BB: updateRayMoves(i, j); break;
+        case BN: updateKnightMoves(i, j); break;
+        case BK: updateKingMoves(i, j);
       }
     }
   }
@@ -149,6 +148,8 @@ void Board::findPinAndCheck()
   int r = kingSquares[player-1] / 8;
   int c = kingSquares[player-1] % 8;
   int i,j;
+
+  // Clear
 
   // Check 8 basic direction to see if there are ray pieces
   for(int d = 0; d <= 8; d++)
@@ -280,8 +281,23 @@ void Board::updateKingMoves(int r, int c)
   /*
    * Castling
    */
-
-
+  if (castlingFlags[player - 1] && checkingPieces[0] == -1) //king has not moved and is not checked
+  {
+    // left rook has not moved, and the 2 squares left of king are empty and not controlled by the opponent
+    if (castlingFlags[player + 1] && (board[r][2] == -1) && (board[r][3] == -1) && !isSquareControlled(r, 2) && !isSquareControlled(r, 3))
+    {
+      moveList.push_back(r * 8 + c); //starting square
+      moveList.push_back(r * 8 + 2); //ending square
+      moveList.push_back(MOVE_CASTLING); // move type
+    }
+    // right rook has not moved, and the 2 squares right of king are empty and not controlled by the opponent
+    if (castlingFlags[player + 3] && (board[r][5] == -1) && (board[r][6] == -1) && !isSquareControlled(r, 5) && !isSquareControlled(r, 6))
+    {
+      moveList.push_back(r * 8 + c); //starting square
+      moveList.push_back(r * 8 + 6); //ending square
+      moveList.push_back(MOVE_CASTLING); // move type
+    }
+  }
 }
 
 void Board::updateRayMoves(int r, int c)
