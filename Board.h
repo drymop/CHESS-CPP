@@ -13,6 +13,11 @@ public:
    * For debugging purpose. Print to console board array
    */
   void printBoard();
+  /**
+   * For debugging purpose. Print to console the list of moves
+   */
+  void printMoveList();
+
 
   /**
    * Starting board
@@ -67,10 +72,9 @@ private:
 
    /**
    * move a piece from square (x1, y1) to (x2, y2)
-   * @param x1, y1 row and column of the starting square (from 0 to 7)
-   * @param x2, y2 row and column of the destination square (from 0 to 7)
+   * @param square1, square2: the starting and ending square (from 0 to 63)
    */
-  void makeMove(int x1,int y1,int x2,int y2);
+  void makeMove(int square1, int square2);
 
   /**
    * Position of white and black king, value from 0 to 63

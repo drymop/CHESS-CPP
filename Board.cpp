@@ -24,9 +24,17 @@ void Board::initBoard()
   kingSquares[1] = 60;
   enPassantCols[0] = -1;
   enPassantCols[1] = -1;
+  castlingFlags[0] = true;
+  castlingFlags[1] = true;
+  castlingFlags[2] = true;
+  castlingFlags[3] = true;
+  castlingFlags[4] = true;
+  castlingFlags[5] = true;
 
   moveList.clear();
   moveList.reserve(100); //around 30 moves
+  checkingPieces[0] = -1;
+  checkingPieces[1] = -1;
   pinPieces.clear();
   pinPieces.reserve(8); // 4 pairs of pinned and pinning pieces
 
@@ -59,6 +67,7 @@ void Board::initBoard()
     board[1][j] = WP;
     board[6][j] = BP;
   }
+  updateMoveList();
 }
 
 int Board::getPiece(int square)
@@ -84,6 +93,18 @@ void Board::printBoard()
   }
 }
 
+void Board::printMoveList()
+{
+  for (int i = 0; i < moveList.size(); i+=3)
+  {
+    char x1 = 'a' + moveList[i]%8;
+    char y1 = '1' + moveList[i]/8;
+    char x2 = 'a' + moveList[i+1]%8;
+    char y2 = '1' + moveList[i+1]/8;
+    printf("%i) %c%c %c%c %i\n", (i/3 + 1), x1, y1, x2, y2, moveList[i+2]);
+  }
+}
+
 void Board::chooseSquare(int square)
 {
   // if choose the same square, unchoose the square
@@ -103,17 +124,72 @@ void Board::chooseSquare(int square)
     }
     else
     {
-      makeMove(chosenSquare/8, chosenSquare%8, square/8, square%8);
+      makeMove(chosenSquare, square);
       chosenSquare = -1;
     }
     printf("Board chosen square %i\n", chosenSquare);
   }
 }
 
-void Board::makeMove(int x1,int y1,int x2,int y2)
+void Board::makeMove(int square1,int square2)
 {
+  int moveType = -1;
+  for (int i = 0; i < moveList.size(); i += 3)
+  {
+    if (moveList[i] == square1 && moveList[i+1] == square2)
+    {
+      moveType = moveList[i+2];
+      break;
+    }
+  }
+
+  if (moveType == -1) return;
+
+  /*
+   * Make the move
+   */
+  int x1 = square1 / 8;
+  int y1 = square1 % 8;
+  int x2 = square2 / 8;
+  int y2 = square2 % 8;
   board[x2][y2] = board[x1][y1];
   board[x1][y1] = -1;
+
+  if (moveType == MOVE_PAWN_EN_PASSANT)
+  {
+    board[x1][y2] = -1;
+  }
+  else if (moveType == MOVE_CASTLING)
+  {
+
+  }
+  else if (moveType == MOVE_PAWN_PROMOTION)
+  {
+
+  }
+
+  /*
+   * Update some variables
+   */
+  // Castling
+  if (square1 == kingSquares[player - 1])
+  {
+    kingSquares[player - 1] = square2;
+  }
+  switch (square1)
+  {
+    case 0: castlingFlags[2] = false; break;
+    case 4: castlingFlags[0] = false; break;
+    case 7: castlingFlags[4] = false; break;
+    case 56: castlingFlags[3] = false; break;
+    case 60: castlingFlags[1] = false; break;
+    case 63: castlingFlags[5] = false; break;
+  }
+  // En passant
+  enPassantCols[2 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
+
+  player = 3 - player;
+  updateMoveList();
 }
 
 void Board::updateMoveList()
@@ -140,6 +216,8 @@ void Board::updateMoveList()
       }
     }
   }
+  printf("Updating move list\n");
+  printMoveList();
 }
 
 void Board::findPinAndCheck()
@@ -149,7 +227,10 @@ void Board::findPinAndCheck()
   int c = kingSquares[player-1] % 8;
   int i,j;
 
-  // Clear
+  // Clear checking pieces and pin pieces
+  checkingPieces[0] = -1;
+  checkingPieces[1] = -1;
+  pinPieces.clear();
 
   // Check 8 basic direction to see if there are ray pieces
   for(int d = 0; d <= 8; d++)
@@ -175,9 +256,8 @@ void Board::findPinAndCheck()
         else // if it's opponent's piece
         {
           // Check if it's checking current king
-          int curPiece = board[i][j];
-          if (curPiece < 6) curPiece += 6; // turn into white for easy switch
-          if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB))
+          int curPieceType = board[i][j]%6; // do not care about color
+          if (curPieceType == BQ || (d < 4 && curPieceType == BR) || (d > 3 && curPieceType == BB))
           {
             int checkIndex = (checkingPieces[0] == -1)? 0 : 1;
             checkingPieces[checkIndex] = i * 8 + j;
@@ -189,9 +269,8 @@ void Board::findPinAndCheck()
       {
         if ( (player == 1) != (board[i][j] > 5) ) // if it's opponent's piece
         {
-          int curPiece = board[i][j];
-          if (curPiece < 6) curPiece += 6; // turn into white for easy switch
-          if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB)) // if it's opponent's ray piece
+          int curPieceType = board[i][j]%6; // do not care about color
+          if (curPieceType == BQ || (d < 4 && curPieceType == BR) || (d > 3 && curPieceType == BB)) // if it's opponent's ray piece
           {
             pinPieces.push_back(pinnedSquare);
             pinPieces.push_back(i* 8 + j);
@@ -256,7 +335,8 @@ void Board::updateKingMoves(int r, int c)
     i = r + dir[d][0];
     j = c + dir[d][1];
     if (i < 0 || i > 7 || j < 0 || j > 7) continue; // out of bound
-    if ((player == 1) == (board[i][j] > 5)) continue; // square has a friendly piece
+
+    if ((board[i][j] != -1) && (player == 1) == (board[i][j] > 5)) continue; // square has a friendly piece
 
     if (isSquareControlled(i, j)) continue; //square is controlled by opponent
 
@@ -302,17 +382,228 @@ void Board::updateKingMoves(int r, int c)
 
 void Board::updateRayMoves(int r, int c)
 {
-  //TO DO
+  /*
+   * Find if the king is checked or the piece is pinned
+   */
+  // if 2 pieces are checking the king, the ray piece cannot move
+  if (checkingPieces[1] != -1) return;
+
+  int checkingSquare = -1; // the square of the piece that is checking the king or pinning the ray piece
+  int raySquare = r * 8 + c;
+
+  if (checkingPieces[0] != -1) checkingSquare = checkingPieces[0];
+
+  for (int i = 0; i < pinPieces.size(); i += 2)
+  {
+    if (pinPieces[i] == raySquare)
+    {
+      if (checkingSquare != -1) return; //if ray is pinned and king is checked, ray cannot move
+      checkingSquare = pinPieces[i+1];
+      break;
+    }
+  }
+
+  /*
+   * Update ray's move
+   * If there is a piece checking king or pinning ray, ray can only move between the checking piece and the king
+   */
+  int i,j;
+
+  /*
+   * Choose direction (queen: 8 dirs, rook: first 4 dirs, bishop: 4 last dirs)
+   */
+  int minDir, maxDir;
+  switch(board[r][c])
+  {
+    case WR: case BR:
+      minDir = 0; maxDir = 3; break;
+    case WB: case BB:
+      minDir = 4; maxDir = 7; break;
+    case WQ: case BQ:
+      minDir = 0; maxDir = 7; break;
+  }
+  // Look into all directions
+  for(int d = minDir; d <= maxDir; d++)
+  {
+    i = r;
+    j = c;
+    while(true)
+    {
+      // advance 1 square in the direction d
+      i += dir[d][0];
+      j += dir[d][1];
+
+      // if out of bound, look in another direction
+      if (i < 0 || i > 7 || j < 0 || j > 7) break;
+      // if moving causes king danger, advance 1 more square in direction d
+      if ( (checkingSquare != -1)
+           && !isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8) ) continue;
+
+      // if square is not empty, stop looking in this direction
+      if (board[i][j] != -1)
+      {
+        // if has opponent piece, it's a legal move
+        if ((player == 1) != (board[i][j] > 5))
+        {
+          moveList.push_back(raySquare);
+          moveList.push_back(i * 8 + j);
+          moveList.push_back(MOVE_NORMAL);
+        }
+        break;
+      }
+      else
+      {
+        // if square is empty, it;s a legal move
+        moveList.push_back(raySquare);
+        moveList.push_back(i * 8 + j);
+        moveList.push_back(MOVE_NORMAL);
+      }
+    }
+  }
 }
 
 void Board::updateKnightMoves(int r, int c)
 {
-  //TO DO
+  /*
+   * Find if the king is checked or the pawn is pinned
+   */
+  // if 2 pieces are checking king, knight cannot move
+  if (checkingPieces[1] != -1) return;
+
+  int knightSquare = r * 8 + c;
+  for (int i = 0; i < pinPieces.size(); i += 2)
+  {
+    if (pinPieces[i] == knightSquare) return; // if knight is pinned by a ray piece, it cannot move (because it cannot return to the same ray)
+  }
+
+  /*
+   * Update knight's move
+   * If there is a piece checking king, knight can only move between the checking piece and the king
+   */
+  int i,j;
+  //Look in 8 knight directions and add legal move
+  for (int d = 0; d < 8; d++)
+  {
+    i = r + dirKnight[d][0];
+    j = c + dirKnight[d][1];
+    // if out of bound, check other directions
+    if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
+    // if moving causes king danger (not going between king and the checking piece), check other directions
+    if ((checkingPieces[0] != -1) && !isInRay(checkingPieces[0]/8, checkingPieces[0]%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8)) continue;
+
+    if( board[i][j] == -1 || ((player == 1) != (board[i][j] > 5)) ) //if square empty or has opponent, legal move
+    {
+      moveList.push_back(knightSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back(MOVE_NORMAL);
+    }
+  }
 }
 
 void Board::updatePawnMoves(int r, int c)
 {
-  //TO DO
+  /*
+   * Find if the king is checked or the pawn is pinned
+   */
+  // if 2 pieces are checking king, pawn cannot move
+  if (checkingPieces[1] != -1) return;
+
+  int checkingSquare = -1; // the square of the piece that is checking king or pinning pawn
+  int pawnSquare = r * 8 + c;
+
+  if (checkingPieces[0] != -1) checkingSquare = checkingPieces[0];
+
+  for (int i = 0; i < pinPieces.size(); i += 2)
+  {
+    if (pinPieces[i] == pawnSquare)
+    {
+      if (checkingSquare != -1) return; //if both pawn is pinned and king is checked, pawn cannot move
+      checkingSquare = pinPieces[i+1];
+      break;
+    }
+  }
+
+  /*
+   * Update pawn's move
+   * If there is a piece checking king or pinning pawn, pawn can only move between the checking piece and the king
+   */
+  int i,j;
+  int moveForward = (player == 1)? 1: -1; // white pawn moves up, black pawn moves down
+
+  /*
+   * Move straight
+   */
+  // One square ahead
+  i = r + moveForward;
+  j = c;
+
+  bool canPromote = (i == 0) || (i == 7); // is in the correct row for promotion
+  bool canDoubleJump = (i == 2 || i == 5); // is in the correct row for double jump
+  bool canEnPassant = (r == ((player == 1)? 4 : 3)); // is in the correct row for en passant
+
+  if (board[i][j] == -1 // empty square in front
+      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) // no king danger if move there
+  {
+    // can jump 1 square forward
+    moveList.push_back(pawnSquare);
+    moveList.push_back(i * 8 + j);
+    moveList.push_back(MOVE_NORMAL);
+  }
+  else //cannot double jump if has piece in front or king is in danger if pawn move forward
+  {
+    canDoubleJump = false;
+  }
+
+  // Two squares ahead
+  i += moveForward;
+   //if in the correct row and the 1st square ahead is empty, and the 2nd square ahead is empty, can jump 2 squares ahead
+  if (canDoubleJump && board[i][j] == -1)
+  {
+    moveList.push_back(pawnSquare);
+    moveList.push_back(i * 8 + j);
+    moveList.push_back(MOVE_PAWN_DOUBLE_JUMP);
+  }
+
+  /*
+   * Capture diagonally and en passant
+   */
+  // Diagonally to the left
+  i = r + moveForward;
+  j = c-1;
+  if (j >= 0 && j < 8  //not outside board
+      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) //no king danger if move there
+  {
+    if (canEnPassant && j == enPassantCols[player-1]) // if in the correct row and correct col, can en passant
+    {
+      moveList.push_back(pawnSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back(MOVE_PAWN_EN_PASSANT);
+    }
+    else if (board[i][j] != -1 && (player == 1) != (board[i][j] > 5)) // if has opponent, can capture
+    {
+      moveList.push_back(pawnSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back( canPromote? MOVE_PAWN_PROMOTION : MOVE_NORMAL );
+    }
+  }
+  // Diagonally to the right
+  j = c+1;
+  if (j >= 0 && j < 8  //not outside board
+      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) //no king danger if move there
+  {
+    if (canEnPassant && j == enPassantCols[player-1]) // if in the correct row and correct col, can en passant
+    {
+      moveList.push_back(pawnSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back(MOVE_PAWN_EN_PASSANT);
+    }
+    else if (board[i][j] != -1 && (player == 1) != (board[i][j] > 5)) // if has opponent, can capture
+    {
+      moveList.push_back(pawnSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back( canPromote? MOVE_PAWN_PROMOTION : MOVE_NORMAL );
+    }
+  }
 }
 
 bool Board::isSquareControlled(int r, int c)
