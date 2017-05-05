@@ -15,7 +15,8 @@ const int Board::dir[8][2] = { {0, 1}, {0, -1}, {1, 0}, {-1, 0},
 const int Board::dirKnight[8][2] = { {1, 2}, {1, -2}, {-1, 2}, {-1, -2},
                                      {2, 1}, {2, -1}, {-2, 1}, {-2, -1} };
 
-void Board::initBoard(){
+void Board::initBoard()
+{
   player = 1; // white player go first
   chosenSquare = -1; // no chosen square yet
 
@@ -115,6 +116,33 @@ void Board::makeMove(int x1,int y1,int x2,int y2)
   board[x1][y1] = -1;
 }
 
+void Board::updateMoveList()
+{
+  moveList.clear();
+  findPinAndCheck();
+  updateKingMoves();
+  // loop through all squares, and update player's pieces in those squares
+  for (int i = 0; i < 8; i++)
+  {
+    for (int j = 0; j < 8; j++)
+    {
+      // if square is empty, or has opponent's piece, do not update
+      if (board[i][j] < 0 || ((player == 1) == (board[i][j] < 6))) continue;
+      // if square has friendly piece, update
+      int piece = board[i][j];
+      if (player == 2) piece += 6; //change piece to white if it's black, for ease of comparison
+      switch (piece)
+      {
+        case WP: updatePawnMoves(i, j); break;
+        case WQ:
+        case WR:
+        case WB: updateRayMoves(i, j); break;
+        case WN: updateKnightMoves(i, j); break;
+      }
+    }
+  }
+}
+
 void Board::findPinAndCheck()
 {
   // Position of King
@@ -122,7 +150,7 @@ void Board::findPinAndCheck()
   int c = kingSquares[player-1] % 8;
   int i,j;
 
-  // Check 8 basic direction
+  // Check 8 basic direction to see if there are ray pieces
   for(int d = 0; d <= 8; d++)
   {
     int pinnedSquare = -1;
@@ -175,7 +203,7 @@ void Board::findPinAndCheck()
 
   if (checkingPieces[1] != -1) return;
 
-  // Check 8 knight's move
+  // Check 8 knight's direction to see if there are opponent's knight
   for (int d = 0; d < 8; d++)
   {
     i = r + dirKnight[d][0];
@@ -192,7 +220,7 @@ void Board::findPinAndCheck()
     }
   }
 
-  // Check pawn's move
+  // Check 2 squares diagonally to the left and right to see if there are opponent pawns
   i = (player == 1)? (r + 1) : (r - 1);
   j = c - 1; // The left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
@@ -215,10 +243,28 @@ void Board::findPinAndCheck()
   }
 }
 
-bool Board::isSquareControlled(int square)
+void Board::updateKingMoves()
 {
-  int r = square / 8;
-  int c = square % 8;
+  //TO DO
+}
+
+void Board::updateRayMoves(int r, int c)
+{
+  //TO DO
+}
+
+void Board::updateKnightMoves(int r, int c)
+{
+  //TO DO
+}
+
+void Board::updatePawnMoves(int r, int c)
+{
+  //TO DO
+}
+
+bool Board::isSquareControlled(int r, int c)
+{
   int i,j;
 
   /*
@@ -259,7 +305,9 @@ bool Board::isSquareControlled(int square)
       break;
     }
   }
-  // Check pawn's move
+  /*
+   * Check pawn's move
+   */
   i = (player == 1)? (r + 1) : (r - 1);
   j = c - 1; // left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
@@ -272,12 +320,25 @@ bool Board::isSquareControlled(int square)
     if (board[i][j] == (player == 1? BP : WP)) return true;
   }
 
-  // if pass all tests, square is not controlled
+  /*
+   * Check if controlled by opponent's king
+   */
+  for (int d = 0; d < 8; d++)
+  {
+    i = r + dir[d][0];
+    j = c + dir[d][1];
+    if (i >= 0 && i < 8 && j >= 0 && j < 8)
+    {
+      if (board[i][j] == (player == 1? BK : WK)) return true;
+    }
+  }
+
+  // if pass all tests, square is not controlled by opponent
   return false;
 }
 
 bool Board::isInRay(int x1, int y1, int x2, int y2, int x3, int y3)
 {
   return ((x1 - x2) * (y1 - y3) == (x1 - x3) * (y1 - y2)) // 3 squares are in a line
-         && ((x2 >= x1 && x2 < x3) || (x2 <= x1 && x2 > x3)); // square 2 is in the middle
+         && ((x2 >= x1 && x2 < x3) || (x2 <= x1 && x2 > x3)); // square 2 is in the middle (or square 1 is square 2)
 }

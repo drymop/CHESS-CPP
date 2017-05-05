@@ -92,25 +92,37 @@ private:
    int enPassantCols[2];
 
   /**
-   * 8 basic direction
+   * 8 basic directions
    */
   static const int dir[8][2];
   /**
-   * 8 knight's direction
+   * 8 knight's directions
    */
   static const int dirKnight[8][2];
-
   /**
-   * Check if king is checked by opponent, and if any piece is pinned.
-   * The results are saved in checkingPieces and pinPieces array.
+   * Types of move
    */
-  void findPinAndCheck();
+  enum moveTypes
+  {
+    MOVE_NORMAL,
+    MOVE_CASTLING,
+    MOVE_PAWN_DOUBLE_JUMP,
+    MOVE_PAWN_PROMOTION,
+    MOVE_PAWN_EN_PASSANT
+  };
 
   /**
    * Update the list of available move (stored in moveList vector).
    * Should be called after making a move.
    */
-  void updatMoveList();
+  void updateMoveList();
+
+  /**
+   * Check if king is checked by opponent, and if any piece is pinned.
+   * The results are saved in checkingPieces and pinPieces array.
+   * Should be called before updating individual piece's moves.
+   */
+  void findPinAndCheck();
 
   /**
    * Add all available king moves (including castling) to moveList vector.
@@ -119,28 +131,28 @@ private:
 
   /**
    * Add all available moves of a ray piece to moveList vector.
-   * @param square: the square of the ray piece (0 -> 63).
+   * @param r, c: the row and column of the ray piece (0 -> 7).
    */
-  void updateRayMoves(int square);
+  void updateRayMoves(int r, int c);
 
   /**
    * Add all available moves of a knight to moveList vector.
-   * @param square: the square of the knight (0 -> 63).
+   * @param r, c: the row and column of the knight (0 -> 7).
    */
-  void updateKnightMoves(int square);
+  void updateKnightMoves(int r, int c);
 
   /**
    * Add all available moves of a pawn to moveList vector.
-   * @param square: the square of the pawn (0 -> 63).
+   * @param r, c: the row and column of the pawn (0 -> 7).
    */
-  void updatePawnMoves(int square);
+  void updatePawnMoves(int r, int c);
 
   /**
    * Check if a square is controlled by the opponent.
-   * @param square: the square number, from 0 to 63.
+   * @param r, c: the row and column of the square (0 -> 7).
    * @return true if square is controlled.
    */
-  bool isSquareControlled(int square);
+  bool isSquareControlled(int r, int c);
 
   /**
    * Check if 3 squares are in a line, in the given order.
