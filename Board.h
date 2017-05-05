@@ -126,8 +126,9 @@ private:
 
   /**
    * Add all available king moves (including castling) to moveList vector.
+   * @param r, c: the row and column of the king (0 -> 7).
    */
-  void updateKingMoves();
+  void updateKingMoves(int r, int c);
 
   /**
    * Add all available moves of a ray piece to moveList vector.

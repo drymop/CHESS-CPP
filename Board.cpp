@@ -120,7 +120,6 @@ void Board::updateMoveList()
 {
   moveList.clear();
   findPinAndCheck();
-  updateKingMoves();
   // loop through all squares, and update player's pieces in those squares
   for (int i = 0; i < 8; i++)
   {
@@ -138,6 +137,7 @@ void Board::updateMoveList()
         case WR:
         case WB: updateRayMoves(i, j); break;
         case WN: updateKnightMoves(i, j); break;
+        case WK: updateKingMoves(i, j);
       }
     }
   }
@@ -243,9 +243,45 @@ void Board::findPinAndCheck()
   }
 }
 
-void Board::updateKingMoves()
+void Board::updateKingMoves(int r, int c)
 {
-  //TO DO
+  // king's position
+  int i, j;
+  /*
+   * 8 squares around king
+   */
+  for (int d = 0; d < 8; d++)
+  {
+    i = r + dir[d][0];
+    j = c + dir[d][1];
+    if (i < 0 || i > 7 || j < 0 || j > 7) continue; // out of bound
+    if ((player == 1) == (board[i][j] > 5)) continue; // square has a friendly piece
+
+    if (isSquareControlled(i, j)) continue; //square is controlled by opponent
+
+    // if the king is between a square and opponent's ray piece, king cannot move to that square
+    if (checkingPieces[0] != -1
+        && isInRay(checkingPieces[0]/8, checkingPieces[0]%8, r, c, i, j) )
+    {
+      continue;
+    }
+    if (checkingPieces[1] != -1
+        && isInRay(checkingPieces[1]/8, checkingPieces[1]%8, r, c, i, j) )
+    {
+      continue;
+    }
+
+    // If passes all tests above, the square is a legal move. Add to moveList
+    moveList.push_back(r * 8 + c); //starting square
+    moveList.push_back(i * 8 + j); //ending square
+    moveList.push_back(MOVE_NORMAL); // move type
+  }
+
+  /*
+   * Castling
+   */
+
+
 }
 
 void Board::updateRayMoves(int r, int c)
