@@ -1,11 +1,10 @@
 #include "HumanPlayer.h"
 #include <stdio.h>
 
-HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd, int playerNum, bool* quit)
+HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd, bool* quit)
 {
   bGUI = brdGUI;
   b = brd;
-  player = playerNum;
   quitGame = quit;
 }
 

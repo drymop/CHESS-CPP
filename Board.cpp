@@ -20,20 +20,21 @@ void Board::initBoard()
   player = 0; // white player go first
   chosenSquare = -1; // no chosen square yet
 
+  // variables to keep track of board
   kingSquares[0] = 4;
   kingSquares[1] = 60;
-  enPassantCols[0] = -1;
-  enPassantCols[1] = -1;
-  castlingFlags[0] = true;
-  castlingFlags[1] = true;
-  castlingFlags[2] = true;
-  castlingFlags[3] = true;
-  castlingFlags[4] = true;
-  castlingFlags[5] = true;
+  castlingFirstMove[0] = 0;
+  castlingFirstMove[1] = 0;
+  castlingFirstMove[2] = 0;
+  castlingFirstMove[3] = 0;
+  castlingFirstMove[4] = 0;
+  castlingFirstMove[5] = 0;
   promotionSquare = -1;
 
+  history.clear();
+  history.reserve(200); // 50 half-turns (4 ints/turn)
   moveList.clear();
-  moveList.reserve(100); //around 30 moves
+  moveList.reserve(105); // 35 moves (3 ints/move)
   checkingPieces[0] = -1;
   checkingPieces[1] = -1;
   pinPieces.clear();
@@ -117,19 +118,35 @@ void Board::printMoveList()
     char y1 = '1' + moveList[i]/8;
     char x2 = 'a' + moveList[i+1]%8;
     char y2 = '1' + moveList[i+1]/8;
-    printf("%i) %c%c %c%c %i\n", (i/3 + 1), x1, y1, x2, y2, moveList[i+2]);
+    printf("  %i) %c%c %c%c %i\n", (i/3 + 1), x1, y1, x2, y2, moveList[i+2]);
+  }
+}
+
+void Board::printHistory()
+{
+  printf("History:\n");
+  for (int i = 0; i < history.size(); i+=4)
+  {
+    printf("  %i) %c%i %c%i capture %i type %i\n", i/4 + 1, history[i]%8 + 'a', history[i]/8 +1, history[i+1]%8 + 'a', history[i+1]/8 +1, history[i+2], history[i+3]);
   }
 }
 
 void Board::makeMove(int moveIndex)
 {
   if (chosenSquare != -1 || promotionSquare != -1) return;
+
   moveIndex = moveIndex * 3; //Each move use 3 indexes, so the nth move is at index 3n.
   int x1 = moveList[moveIndex] / 8;
   int y1 = moveList[moveIndex] % 8;
   int x2 = moveList[moveIndex + 1] / 8;
   int y2 = moveList[moveIndex + 1] % 8;
   int moveType = moveList[moveIndex + 2];
+
+  // save move to history
+  history.push_back(moveList[moveIndex]);
+  history.push_back(moveList[moveIndex+1]);
+  history.push_back(board[x2][y2]);
+  history.push_back(moveType);
 
   // realize move
   board[x2][y2] = board[x1][y1];
@@ -176,18 +193,28 @@ void Board::makeMove(int moveIndex)
   {
     kingSquares[player] = moveList[moveIndex+1];
   }
-  // If king or rook move, update castling flags
+  // If king or rook first move, update castling flags
   switch (moveList[moveIndex])
   {
-    case 0: castlingFlags[2] = false; break;
-    case 4: castlingFlags[0] = false; break;
-    case 7: castlingFlags[4] = false; break;
-    case 56: castlingFlags[3] = false; break;
-    case 60: castlingFlags[1] = false; break;
-    case 63: castlingFlags[5] = false; break;
+    case 0:
+      if (!castlingFirstMove[2]) castlingFirstMove[2] = history.size();
+      break;
+    case 4:
+      if (!castlingFirstMove[0]) castlingFirstMove[0] = history.size();
+      break;
+    case 7:
+      if (!castlingFirstMove[4]) castlingFirstMove[4] = history.size();
+      break;
+    case 56:
+      if (!castlingFirstMove[3]) castlingFirstMove[3] = history.size();
+      break;
+    case 60:
+      if (!castlingFirstMove[1]) castlingFirstMove[1] = history.size();
+      break;
+    case 63:
+      if (!castlingFirstMove[5]) castlingFirstMove[5] = history.size();
+      break;
   }
-  // En passant flags
-  enPassantCols[1 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
 
   /*
    * Change player and update move list
@@ -236,13 +263,20 @@ void Board::makeMove(int square1,int square2)
 
   if (moveType == -1) return;
 
-  /*
-   * Make the move
-   */
   int x1 = square1 / 8;
   int y1 = square1 % 8;
   int x2 = square2 / 8;
   int y2 = square2 % 8;
+  /*
+   * Save move to history
+   */
+  history.push_back(square1);
+  history.push_back(square2);
+  history.push_back(board[x2][y2]);
+  history.push_back(moveType);
+  /*
+   * Make the move
+   */
   board[x2][y2] = board[x1][y1];
   board[x1][y1] = -1;
 
@@ -266,19 +300,14 @@ void Board::makeMove(int square1,int square2)
       }
       break;
     default:
-      //if has promotion, set the promotion square
+      //if has promotion, set the promotion square and return
       promotionSquare = square2;
-      break;
+      return;
   }
 
   /*
    * Update variables for keeping track of the board
    */
-  // En passant flags of opponent
-  enPassantCols[1 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
-  // Promotion flags
-  if (promotionSquare != -1) return;
-
   // If king moves, change square of king
   if (square1 == kingSquares[player])
   {
@@ -287,12 +316,24 @@ void Board::makeMove(int square1,int square2)
   // If king or rook move, update castling flags
   switch (square1)
   {
-    case 0: castlingFlags[2] = false; break;
-    case 4: castlingFlags[0] = false; break;
-    case 7: castlingFlags[4] = false; break;
-    case 56: castlingFlags[3] = false; break;
-    case 60: castlingFlags[1] = false; break;
-    case 63: castlingFlags[5] = false; break;
+    case 0:
+      if (!castlingFirstMove[2]) castlingFirstMove[2] = history.size();
+      break;
+    case 4:
+      if (!castlingFirstMove[0]) castlingFirstMove[0] = history.size();
+      break;
+    case 7:
+      if (!castlingFirstMove[4]) castlingFirstMove[4] = history.size();
+      break;
+    case 56:
+      if (!castlingFirstMove[3]) castlingFirstMove[3] = history.size();
+      break;
+    case 60:
+      if (!castlingFirstMove[1]) castlingFirstMove[1] = history.size();
+      break;
+    case 63:
+      if (!castlingFirstMove[5]) castlingFirstMove[5] = history.size();
+      break;
   }
 
   /*
@@ -324,12 +365,80 @@ void Board::promote(int piece)
   updateMoveList();
 }
 
+void Board::undoMove()
+{
+  promotionSquare = -1;
+  chosenSquare = -1;
+
+  int i = history.size();
+  if (i == 0) return;
+
+  int square1 = history[i-4];
+  int square2 = history[i-3];
+
+  int x1 = square1 / 8;
+  int y1 = square1 % 8;
+  int x2 = square2 / 8;
+  int y2 = square2 % 8;
+  int moveType = history[i-1];
+
+  // Undo player
+  player = 1 - player;
+
+  // Undo move
+  board[x1][y1] = board[x2][y2];
+  board[x2][y2] = history[i-2];
+
+  // delete history of the move
+  history.pop_back();
+  history.pop_back();
+  history.pop_back();
+  history.pop_back();
+
+  // Undo special move
+  switch(moveType)
+  {
+    case MOVE_NORMAL:
+      break;
+    case MOVE_PAWN_DOUBLE_JUMP:
+      updateMoveList();
+      return;
+    case MOVE_PAWN_EN_PASSANT:
+      board[x1][y2] = player? WP : BP;
+      updateMoveList();
+      return;
+    case MOVE_CASTLING:
+      if (y2 == 2) //left castling
+      {
+        board[x2][0] = board[x2][3];
+        board[x2][3] = -1;
+      }
+      else
+      {
+        board[x2][7] = board[x2][5];
+        board[x2][5] = -1;
+      }
+      break;
+    default: //promotion
+      board[x1][y1] = player? BP : WP;
+      updateMoveList();
+      return;
+  }
+
+  // Undo variables to keep track of board
+  // King square
+  if (kingSquares[player] == square2) kingSquares[player] = square1;
+  for (i = 0; i < 6; i++)
+  {
+    if (castlingFirstMove[i] > history.size()) castlingFirstMove[i] = 0;
+  }
+  updateMoveList();
+}
+
 void Board::updateMoveList()
 {
-  printf("Updating move list\n");
   moveList.clear();
   findPinAndCheck();
-  printf("player: %i %s\n", player, player? "true":"false");
   printf("Check: %i %i\n", checkingPieces[0], checkingPieces[1]);
   // loop through all squares, and update player's pieces in those squares
   for (int i = 0; i < 8; i++)
@@ -352,6 +461,7 @@ void Board::updateMoveList()
     }
   }
   printMoveList();
+  printHistory();
 }
 
 void Board::findPinAndCheck()
@@ -497,10 +607,10 @@ void Board::updateKingMoves(int r, int c)
   /*
    * Castling
    */
-  if (castlingFlags[player] && checkingPieces[0] == -1) //king has not moved and is not checked
+  if (!castlingFirstMove[player] && checkingPieces[0] == -1) //king has not moved and is not checked
   {
     // left rook has not moved, and the squares left of king are empty and not controlled by the opponent
-    if ( castlingFlags[player + 2] && (board[r][1] == -1) && (board[r][2] == -1) && (board[r][3] == -1)
+    if ( !castlingFirstMove[player + 2] && (board[r][1] == -1) && (board[r][2] == -1) && (board[r][3] == -1)
          && !isSquareControlled(r, 2) && !isSquareControlled(r, 3) )
     {
       moveList.push_back(r * 8 + c); //starting square
@@ -508,7 +618,7 @@ void Board::updateKingMoves(int r, int c)
       moveList.push_back(MOVE_CASTLING); // move type
     }
     // right rook has not moved, and the 2 squares right of king are empty and not controlled by the opponent
-    if ( castlingFlags[player + 4] && (board[r][5] == -1) && (board[r][6] == -1)
+    if ( !castlingFirstMove[player + 4] && (board[r][5] == -1) && (board[r][6] == -1)
          && !isSquareControlled(r, 5) && !isSquareControlled(r, 6) )
     {
       moveList.push_back(r * 8 + c); //starting square
@@ -674,7 +784,8 @@ void Board::updatePawnMoves(int r, int c)
 
   bool canPromote = (i == 0) || (i == 7); // is in the correct row for promotion
   bool canDoubleJump = (i == 2 || i == 5); // is in the correct row for double jump
-  bool canEnPassant = (r == (player? 3 : 4)); // is in the correct row for en passant
+  bool canEnPassant = (r == (player? 3 : 4))
+                      && (history.size() != 0) && (history[history.size()-1] == MOVE_PAWN_DOUBLE_JUMP); // is in the correct row for en passant, and the last move is a double jump
 
   if (board[i][j] == -1 // empty square in front
       && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8))) // no king danger if move there
@@ -729,7 +840,7 @@ void Board::updatePawnMoves(int r, int c)
     if (j >= 0 && j < 8  //not outside board
         && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8))) //no king danger if move there
     {
-      if (canEnPassant && j == enPassantCols[player]) // if in the correct row and correct col, can en passant
+      if (canEnPassant && j == history[history.size()-3] % 8) // if in the correct row and correct col, can en passant
       {
         moveList.push_back(pawnSquare);
         moveList.push_back(i * 8 + j);

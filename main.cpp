@@ -59,20 +59,22 @@ int main(int argc, char* argv[])
   bgui.draw(renderer);
 
   Player** players = new Player*[2];
-  players[0] = new RandomPlayer(&b);
-  players[1] = new RandomPlayer(&b);
+  //players[0] = new RandomPlayer(&b);
+  //players[1] = new RandomPlayer(&b);
+  players[0] = new HumanPlayer(&bgui, &b, &quit);
+  players[1] = new HumanPlayer(&bgui, &b, &quit);
 
   int move = 0;
   while (!quit)
   {
     players[b.getPlayer()]->decideMove();
     bgui.draw(renderer);
-    move = 0;
+    /*move = 0;
     while (move == 0)
     {
       move = bgui.getMove();
     }
-    if (move == -1) break;
+    if (move == -1) break;*/
   }
 
   quitGraphic(window, renderer);

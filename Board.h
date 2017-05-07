@@ -17,6 +17,10 @@ public:
    * For debugging purpose. Print to console the list of moves
    */
   void printMoveList();
+  /**
+   * For debugging purpose. Print to console the history of moves
+   */
+  void printHistory();
 
 
   /**
@@ -74,6 +78,11 @@ public:
    */
   void promote(int piece);
 
+  /**
+   * Undo the previous move
+   */
+  void undoMove();
+
 private:
   /**
    * Contains the pieces on chessboard
@@ -94,9 +103,16 @@ private:
   std::vector<int> moveList;
 
   /**
-   * The square chosen by current player
-   * Used to display chosen piece on screen
-   * -1 if no chosen square, else 0 to 63
+   * The history of the game.
+   * Each half-turn uses 4 int: starting square (0->63), ending square(0->63), captured piece (-1 if no piece captured), and move type.
+   * Used for undoing.
+   */
+  std::vector<int> history;
+
+  /**
+   * The square chosen by current player.
+   * Used to display chosen piece on screen.
+   * -1 if no chosen square, else 0 to 63.
    */
   int chosenSquare;
 
@@ -120,18 +136,13 @@ private:
    * Even index: pinned pieces, odd index: pinning pieces
    */
   std::vector<int> pinPieces;
-  /**
-   * The cols of last double jump pawns of opponent, value from 0 to 63, -1 if last move is not a double jump
-   * Use for enpassant checking
-   */
-  int enPassantCols[2];
 
   /**
-   * Keep track of whether the kings and rooks have moved. Used for castling.
+   * Keep track of when the kings and rooks first move. Used for castling.
    * Order: king, left rook, right rook. The even flags are for white, and the odds are for black.
-   * True if the piece has not moved, false otherwise.
+   * 0 if the piece has not moved, otherwise the size of the history when the piece first moved.
    */
-  bool castlingFlags[6];
+  int castlingFirstMove[6];
 
   /**
    * The square that are having a promotion event (0 -> 63).

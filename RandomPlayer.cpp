@@ -4,7 +4,7 @@
 
 RandomPlayer::RandomPlayer(Board* brd)
 {
-  //srand(time(0));
+  srand(time(0));
   b = brd;
 }
 
