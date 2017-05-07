@@ -17,7 +17,7 @@ const int Board::dirKnight[8][2] = { {1, 2}, {1, -2}, {-1, 2}, {-1, -2},
 
 void Board::initBoard()
 {
-  player = 1; // white player go first
+  player = 0; // white player go first
   chosenSquare = -1; // no chosen square yet
 
   kingSquares[0] = 4;
@@ -30,6 +30,7 @@ void Board::initBoard()
   castlingFlags[3] = true;
   castlingFlags[4] = true;
   castlingFlags[5] = true;
+  promotionSquare = -1;
 
   moveList.clear();
   moveList.reserve(100); //around 30 moves
@@ -80,6 +81,21 @@ int Board::getPiece(int square)
   return piece;
 }
 
+int Board::getPlayer()
+{
+  return player;
+}
+
+int Board::getNumMoves()
+{
+  return moveList.size()/3;
+}
+
+std::vector<int> Board::getMoveList()
+{
+  return moveList;
+}
+
 void Board::printBoard()
 {
   printf("Printing Board\n");
@@ -105,6 +121,81 @@ void Board::printMoveList()
   }
 }
 
+void Board::makeMove(int moveIndex)
+{
+  if (chosenSquare != -1 || promotionSquare != -1) return;
+  moveIndex = moveIndex * 3; //Each move use 3 indexes, so the nth move is at index 3n.
+  int x1 = moveList[moveIndex] / 8;
+  int y1 = moveList[moveIndex] % 8;
+  int x2 = moveList[moveIndex + 1] / 8;
+  int y2 = moveList[moveIndex + 1] % 8;
+  int moveType = moveList[moveIndex + 2];
+
+  // realize move
+  board[x2][y2] = board[x1][y1];
+  board[x1][y1] = -1;
+
+  switch (moveType)
+  {
+    case MOVE_NORMAL: break;
+    case MOVE_PAWN_DOUBLE_JUMP: break;
+    case MOVE_PAWN_EN_PASSANT:
+      board[x1][y2] = -1;
+      break;
+    case MOVE_CASTLING:
+      if (y2 == 2) //left castling
+      {
+        board[x2][3] = board[x2][0];
+        board[x2][0] = -1;
+      }
+      else //right castling
+      {
+        board[x2][5] = board[x2][7];
+        board[x2][7] = -1;
+      }
+      break;
+    case MOVE_PROMOTION_QUEEN:
+      board[x2][y2] = player? BQ : WQ;
+      break;
+    case MOVE_PROMOTION_ROOK:
+      board[x2][y2] = player? BR : WR;
+      break;
+    case MOVE_PROMOTION_KNIGHT:
+      board[x2][y2] = player? BR : WR;
+      break;
+    case MOVE_PROMOTION_BISHOP:
+      board[x2][y2] = player? BR : WR;
+      break;
+  }
+
+  /*
+   * Update variables for keeping track of the board
+   */
+  // If king moves, change square of king
+  if (moveList[moveIndex] == kingSquares[player])
+  {
+    kingSquares[player] = moveList[moveIndex+1];
+  }
+  // If king or rook move, update castling flags
+  switch (moveList[moveIndex])
+  {
+    case 0: castlingFlags[2] = false; break;
+    case 4: castlingFlags[0] = false; break;
+    case 7: castlingFlags[4] = false; break;
+    case 56: castlingFlags[3] = false; break;
+    case 60: castlingFlags[1] = false; break;
+    case 63: castlingFlags[5] = false; break;
+  }
+  // En passant flags
+  enPassantCols[1 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
+
+  /*
+   * Change player and update move list
+   */
+  player = 1 - player;
+  updateMoveList();
+}
+
 void Board::chooseSquare(int square)
 {
   // if choose the same square, unchoose the square
@@ -117,7 +208,7 @@ void Board::chooseSquare(int square)
     if(chosenSquare == -1) // if currently no square is selected
     {
       int chosenPiece = board[square/8][square%8];
-      if ( (chosenPiece >= 0) && ((chosenPiece > 5) == (player == 1)) ) //if the piece chosen is player's piece
+      if ( (chosenPiece >= 0) && ((chosenPiece < 6) == player) ) //if the piece chosen is player's piece
       {
         chosenSquare = square;
       }
@@ -127,12 +218,12 @@ void Board::chooseSquare(int square)
       makeMove(chosenSquare, square);
       chosenSquare = -1;
     }
-    printf("Board chosen square %i\n", chosenSquare);
   }
 }
 
 void Board::makeMove(int square1,int square2)
 {
+  if (promotionSquare != -1) return;
   int moveType = -1;
   for (int i = 0; i < moveList.size(); i += 3)
   {
@@ -155,45 +246,45 @@ void Board::makeMove(int square1,int square2)
   board[x2][y2] = board[x1][y1];
   board[x1][y1] = -1;
 
-  if (moveType == MOVE_PAWN_EN_PASSANT)
+  switch (moveType)
   {
-    board[x1][y2] = -1;
-  }
-  else if (moveType == MOVE_CASTLING)
-  {
-    switch (square2)
-    {
-      case 2:
-        board[0][3] = WR;
-        board[0][0] = -1;
-        break;
-      case 6:
-        board[0][5] = WR;
-        board[0][7] = -1;
-        break;
-      case 58:
-        board[7][3] = BR;
-        board[7][0] = -1;
-        break;
-      case 62:
-        board[7][5] = BR;
-        board[7][7] = -1;
-        break;
-    }
-  }
-  else if (moveType == MOVE_PAWN_PROMOTION)
-  {
-
+    case MOVE_NORMAL: break;
+    case MOVE_PAWN_DOUBLE_JUMP: break;
+    case MOVE_PAWN_EN_PASSANT:
+      board[x1][y2] = -1;
+      break;
+    case MOVE_CASTLING:
+      if (y2 == 2) //left castling
+      {
+        board[x2][3] = board[x2][0];
+        board[x2][0] = -1;
+      }
+      else //right castling
+      {
+        board[x2][5] = board[x2][7];
+        board[x2][7] = -1;
+      }
+      break;
+    default:
+      //if has promotion, set the promotion square
+      promotionSquare = square2;
+      break;
   }
 
   /*
-   * Update some variables
+   * Update variables for keeping track of the board
    */
-  // Castling
-  if (square1 == kingSquares[player - 1])
+  // En passant flags of opponent
+  enPassantCols[1 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
+  // Promotion flags
+  if (promotionSquare != -1) return;
+
+  // If king moves, change square of king
+  if (square1 == kingSquares[player])
   {
-    kingSquares[player - 1] = square2;
+    kingSquares[player] = square2;
   }
+  // If king or rook move, update castling flags
   switch (square1)
   {
     case 0: castlingFlags[2] = false; break;
@@ -203,24 +294,50 @@ void Board::makeMove(int square1,int square2)
     case 60: castlingFlags[1] = false; break;
     case 63: castlingFlags[5] = false; break;
   }
-  // En passant
-  enPassantCols[2 - player] = (moveType == MOVE_PAWN_DOUBLE_JUMP)? y2 : -1;
 
-  player = 3 - player;
+  /*
+   * Change player and update move list
+   */
+  player = 1 - player;
+  updateMoveList();
+}
+
+bool Board::hasPromotion()
+{
+  return promotionSquare != -1;
+}
+
+void Board::promote(int piece)
+{
+  piece = piece%6; //only care about the type
+  // change the pawn in the promotion square to the piece
+  switch (piece)
+  {
+    case BQ: board[promotionSquare/8][promotionSquare%8] = player? BQ:WQ;
+    case BR: board[promotionSquare/8][promotionSquare%8] = player? BR:WR;
+    case BN: board[promotionSquare/8][promotionSquare%8] = player? BN:WN;
+    case BB: board[promotionSquare/8][promotionSquare%8] = player? BB:WB;
+    default: return;
+  }
+  promotionSquare = -1;
+  player = 1 - player;
   updateMoveList();
 }
 
 void Board::updateMoveList()
 {
+  printf("Updating move list\n");
   moveList.clear();
   findPinAndCheck();
+  printf("player: %i %s\n", player, player? "true":"false");
+  printf("Check: %i %i\n", checkingPieces[0], checkingPieces[1]);
   // loop through all squares, and update player's pieces in those squares
   for (int i = 0; i < 8; i++)
   {
     for (int j = 0; j < 8; j++)
     {
       // if square is empty, or has opponent's piece, do not update
-      if (board[i][j] < 0 || ((player == 1) == (board[i][j] < 6))) continue;
+      if (board[i][j] < 0 || (player == (board[i][j] > 5))) continue;
       // if square has friendly piece, update
       int pType = board[i][j] %6; // don't care about color
       switch (pType)
@@ -234,15 +351,14 @@ void Board::updateMoveList()
       }
     }
   }
-  printf("Updating move list\n");
   printMoveList();
 }
 
 void Board::findPinAndCheck()
 {
   // Position of King
-  int r = kingSquares[player-1] / 8;
-  int c = kingSquares[player-1] % 8;
+  int r = kingSquares[player] / 8;
+  int c = kingSquares[player] % 8;
   int i,j;
 
   // Clear checking pieces and pin pieces
@@ -267,9 +383,10 @@ void Board::findPinAndCheck()
       if (board[i][j] == -1) continue;
       if (pinnedSquare == -1) // the first obstacle
       {
-        if ( (player == 1) == (board[i][j] > 5) ) // if it's current player's piece
+        if (player == (board[i][j] < 6)) // if it's a friendly piece
         {
           pinnedSquare = i * 8 + j;
+          printf("Find pin and check pinned square %i\n", pinnedSquare);
         }
         else // if it's opponent's piece
         {
@@ -285,7 +402,7 @@ void Board::findPinAndCheck()
       }
       else // the second obstacle
       {
-        if ( (player == 1) != (board[i][j] > 5) ) // if it's opponent's piece
+        if ( player == (board[i][j] > 5) ) // if it's opponent's piece
         {
           int curPieceType = board[i][j]%6; // do not care about color
           if (curPieceType == BQ || (d < 4 && curPieceType == BR) || (d > 3 && curPieceType == BB)) // if it's opponent's ray piece
@@ -309,7 +426,7 @@ void Board::findPinAndCheck()
     // if out of bound, check other directions
     if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
 
-    if (board[i][j] == (player == 1? BN : WN) ) // if has opponent's knight
+    if (board[i][j] == (player? WN : BN) ) // if has opponent's knight
     {
       int t = (checkingPieces[0] == -1)? 0 : 1;
       checkingPieces[t] = i * 8 + j;
@@ -319,11 +436,11 @@ void Board::findPinAndCheck()
   }
 
   // Check 2 squares diagonally to the left and right to see if there are opponent pawns
-  i = (player == 1)? (r + 1) : (r - 1);
+  i = player? (r - 1) : (r + 1);
   j = c - 1; // The left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if ( board[i][j] == (player == 1? BP:WP) )
+    if ( board[i][j] == (player? WP:BP) )
     {
       int t = (checkingPieces[0] == -1)? 0 : 1;
       checkingPieces[t] = i * 8 + j;
@@ -333,7 +450,7 @@ void Board::findPinAndCheck()
   j = c + 1; // The right column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (player == 1? BP:WP))
+    if (board[i][j] == (player? WP:BP))
     {
       int t = (checkingPieces[0] == -1)? 0 : 1;
       checkingPieces[t] = i * 8 + j;
@@ -354,7 +471,7 @@ void Board::updateKingMoves(int r, int c)
     j = c + dir[d][1];
     if (i < 0 || i > 7 || j < 0 || j > 7) continue; // out of bound
 
-    if ((board[i][j] != -1) && (player == 1) == (board[i][j] > 5)) continue; // square has a friendly piece
+    if ((board[i][j] != -1) && (player == (board[i][j] < 6))) continue; // square has a friendly piece
 
     if (isSquareControlled(i, j)) continue; //square is controlled by opponent
 
@@ -364,6 +481,7 @@ void Board::updateKingMoves(int r, int c)
     {
       continue;
     }
+
     if (checkingPieces[1] != -1
         && isInRay(checkingPieces[1]/8, checkingPieces[1]%8, r, c, i, j) )
     {
@@ -379,17 +497,19 @@ void Board::updateKingMoves(int r, int c)
   /*
    * Castling
    */
-  if (castlingFlags[player - 1] && checkingPieces[0] == -1) //king has not moved and is not checked
+  if (castlingFlags[player] && checkingPieces[0] == -1) //king has not moved and is not checked
   {
-    // left rook has not moved, and the 2 squares left of king are empty and not controlled by the opponent
-    if (castlingFlags[player + 1] && (board[r][2] == -1) && (board[r][3] == -1) && !isSquareControlled(r, 2) && !isSquareControlled(r, 3))
+    // left rook has not moved, and the squares left of king are empty and not controlled by the opponent
+    if ( castlingFlags[player + 2] && (board[r][1] == -1) && (board[r][2] == -1) && (board[r][3] == -1)
+         && !isSquareControlled(r, 2) && !isSquareControlled(r, 3) )
     {
       moveList.push_back(r * 8 + c); //starting square
       moveList.push_back(r * 8 + 2); //ending square
       moveList.push_back(MOVE_CASTLING); // move type
     }
     // right rook has not moved, and the 2 squares right of king are empty and not controlled by the opponent
-    if (castlingFlags[player + 3] && (board[r][5] == -1) && (board[r][6] == -1) && !isSquareControlled(r, 5) && !isSquareControlled(r, 6))
+    if ( castlingFlags[player + 4] && (board[r][5] == -1) && (board[r][6] == -1)
+         && !isSquareControlled(r, 5) && !isSquareControlled(r, 6) )
     {
       moveList.push_back(r * 8 + c); //starting square
       moveList.push_back(r * 8 + 6); //ending square
@@ -453,29 +573,26 @@ void Board::updateRayMoves(int r, int c)
 
       // if out of bound, look in another direction
       if (i < 0 || i > 7 || j < 0 || j > 7) break;
-      // if moving causes king danger, advance 1 more square in direction d
-      if ( (checkingSquare != -1)
-           && !isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8) ) continue;
 
-      // if square is not empty, stop looking in this direction
-      if (board[i][j] != -1)
+      // if square has friendly piece, look in another direction
+      if ((board[i][j] != -1) && (player == (board[i][j] < 6)))
       {
-        // if has opponent piece, it's a legal move
-        if ((player == 1) != (board[i][j] > 5))
-        {
-          moveList.push_back(raySquare);
-          moveList.push_back(i * 8 + j);
-          moveList.push_back(MOVE_NORMAL);
-        }
         break;
       }
-      else
-      {
-        // if square is empty, it;s a legal move
-        moveList.push_back(raySquare);
-        moveList.push_back(i * 8 + j);
-        moveList.push_back(MOVE_NORMAL);
-      }
+
+      // if moving causes king danger, advance 1 more square in direction d
+      if ( (checkingSquare != -1)
+           && !isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8) ) continue;
+
+      /*
+       * At this point:
+       * + King is not endangered if move
+       * + Square is empty or has opponent's piece
+       */
+      moveList.push_back(raySquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back(MOVE_NORMAL);
+      if (board[i][j] != -1) break;
     }
   }
 }
@@ -507,9 +624,9 @@ void Board::updateKnightMoves(int r, int c)
     // if out of bound, check other directions
     if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
     // if moving causes king danger (not going between king and the checking piece), check other directions
-    if ((checkingPieces[0] != -1) && !isInRay(checkingPieces[0]/8, checkingPieces[0]%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8)) continue;
+    if ((checkingPieces[0] != -1) && !isInRay(checkingPieces[0]/8, checkingPieces[0]%8, i, j, kingSquares[player]/8, kingSquares[player]%8)) continue;
 
-    if( board[i][j] == -1 || ((player == 1) != (board[i][j] > 5)) ) //if square empty or has opponent, legal move
+    if( board[i][j] == -1 || (player == (board[i][j] > 5)) ) //if square empty or has opponent, legal move
     {
       moveList.push_back(knightSquare);
       moveList.push_back(i * 8 + j);
@@ -529,7 +646,7 @@ void Board::updatePawnMoves(int r, int c)
   int checkingSquare = -1; // the square of the piece that is checking king or pinning pawn
   int pawnSquare = r * 8 + c;
 
-  if (checkingPieces[0] != -1) checkingSquare = checkingPieces[0];
+  checkingSquare = checkingPieces[0];
 
   for (int i = 0; i < pinPieces.size(); i += 2)
   {
@@ -546,7 +663,7 @@ void Board::updatePawnMoves(int r, int c)
    * If there is a piece checking king or pinning pawn, pawn can only move between the checking piece and the king
    */
   int i,j;
-  int moveForward = (player == 1)? 1: -1; // white pawn moves up, black pawn moves down
+  int moveForward = player? -1: 1; // white pawn moves up, black pawn moves down
 
   /*
    * Move straight
@@ -557,15 +674,35 @@ void Board::updatePawnMoves(int r, int c)
 
   bool canPromote = (i == 0) || (i == 7); // is in the correct row for promotion
   bool canDoubleJump = (i == 2 || i == 5); // is in the correct row for double jump
-  bool canEnPassant = (r == ((player == 1)? 4 : 3)); // is in the correct row for en passant
+  bool canEnPassant = (r == (player? 3 : 4)); // is in the correct row for en passant
 
   if (board[i][j] == -1 // empty square in front
-      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) // no king danger if move there
+      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8))) // no king danger if move there
   {
     // can jump 1 square forward
-    moveList.push_back(pawnSquare);
-    moveList.push_back(i * 8 + j);
-    moveList.push_back(MOVE_NORMAL);
+    if (canPromote)
+    {
+      // if can promote, add 4 moves (promote to queen, rook, knight, or bishop)
+      int endSquare = i * 8 + j;
+      moveList.push_back(pawnSquare);
+      moveList.push_back(endSquare);
+      moveList.push_back(MOVE_PROMOTION_QUEEN);
+      moveList.push_back(pawnSquare);
+      moveList.push_back(endSquare);
+      moveList.push_back(MOVE_PROMOTION_ROOK);
+      moveList.push_back(pawnSquare);
+      moveList.push_back(endSquare);
+      moveList.push_back(MOVE_PROMOTION_KNIGHT);
+      moveList.push_back(pawnSquare);
+      moveList.push_back(endSquare);
+      moveList.push_back(MOVE_PROMOTION_BISHOP);
+    }
+    else
+    {
+      moveList.push_back(pawnSquare);
+      moveList.push_back(i * 8 + j);
+      moveList.push_back(MOVE_NORMAL);
+    }
   }
   else //cannot double jump if has piece in front or king is in danger if pawn move forward
   {
@@ -585,41 +722,45 @@ void Board::updatePawnMoves(int r, int c)
   /*
    * Capture diagonally and en passant
    */
-  // Diagonally to the left
   i = r + moveForward;
-  j = c-1;
-  if (j >= 0 && j < 8  //not outside board
-      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) //no king danger if move there
+  // check through the left and right column
+  for (j = c - 1; j <= c+1; j += 2)
   {
-    if (canEnPassant && j == enPassantCols[player-1]) // if in the correct row and correct col, can en passant
+    if (j >= 0 && j < 8  //not outside board
+        && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8))) //no king danger if move there
     {
-      moveList.push_back(pawnSquare);
-      moveList.push_back(i * 8 + j);
-      moveList.push_back(MOVE_PAWN_EN_PASSANT);
-    }
-    else if (board[i][j] != -1 && (player == 1) != (board[i][j] > 5)) // if has opponent, can capture
-    {
-      moveList.push_back(pawnSquare);
-      moveList.push_back(i * 8 + j);
-      moveList.push_back( canPromote? MOVE_PAWN_PROMOTION : MOVE_NORMAL );
-    }
-  }
-  // Diagonally to the right
-  j = c+1;
-  if (j >= 0 && j < 8  //not outside board
-      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player-1]/8, kingSquares[player-1]%8))) //no king danger if move there
-  {
-    if (canEnPassant && j == enPassantCols[player-1]) // if in the correct row and correct col, can en passant
-    {
-      moveList.push_back(pawnSquare);
-      moveList.push_back(i * 8 + j);
-      moveList.push_back(MOVE_PAWN_EN_PASSANT);
-    }
-    else if (board[i][j] != -1 && (player == 1) != (board[i][j] > 5)) // if has opponent, can capture
-    {
-      moveList.push_back(pawnSquare);
-      moveList.push_back(i * 8 + j);
-      moveList.push_back( canPromote? MOVE_PAWN_PROMOTION : MOVE_NORMAL );
+      if (canEnPassant && j == enPassantCols[player]) // if in the correct row and correct col, can en passant
+      {
+        moveList.push_back(pawnSquare);
+        moveList.push_back(i * 8 + j);
+        moveList.push_back(MOVE_PAWN_EN_PASSANT);
+      }
+      else if (board[i][j] != -1 && (player == (board[i][j] > 5))) // if has opponent, can capture
+      {
+        if (canPromote)
+        {
+          // if can promote, add 4 moves (promote to queen, rook, knight, or bishop)
+          int endSquare = i * 8 + j;
+          moveList.push_back(pawnSquare);
+          moveList.push_back(endSquare);
+          moveList.push_back(MOVE_PROMOTION_QUEEN);
+          moveList.push_back(pawnSquare);
+          moveList.push_back(endSquare);
+          moveList.push_back(MOVE_PROMOTION_ROOK);
+          moveList.push_back(pawnSquare);
+          moveList.push_back(endSquare);
+          moveList.push_back(MOVE_PROMOTION_KNIGHT);
+          moveList.push_back(pawnSquare);
+          moveList.push_back(endSquare);
+          moveList.push_back(MOVE_PROMOTION_BISHOP);
+        }
+        else
+        {
+          moveList.push_back(pawnSquare);
+          moveList.push_back(i * 8 + j);
+          moveList.push_back(MOVE_NORMAL);
+        }
+      }
     }
   }
 }
@@ -637,7 +778,7 @@ bool Board::isSquareControlled(int r, int c)
     j = c + dirKnight[d][1];
     // if out of bound, check other directions
     if ( i < 0 || i > 7 || j < 0 || j > 7) continue;
-    if (board[i][j] == (player == 1? BN : WN) ) return true;
+    if (board[i][j] == (player? WN : BN) ) return true;
   }
 
   /*
@@ -656,12 +797,12 @@ bool Board::isSquareControlled(int r, int c)
       if (i < 0 || i > 7 || j < 0 || j > 7) break;
       // if empty square, advance 1 more square
       if (board[i][j] == -1) continue;
-      // if it is opponent's ray piece
-      if ( (player == 1) != (board[i][j] > 5) )
+      // if it is opponent's piece
+      if (player == (board[i][j] > 5))
       {
-        int curPiece = board[i][j];
-        if (curPiece < 6) curPiece += 6; //turn into whiteint curPiece = board[i][j];
-        if (curPiece == WQ || (d < 4 && curPiece == WR) || (d > 3 && curPiece == WB)) return true;
+        // if it's opponent's ray piece
+        int curPiece = board[i][j] % 6;
+        if (curPiece == BQ || (d < 4 && curPiece == BR) || (d > 3 && curPiece == BB)) return true;
       }
       break;
     }
@@ -669,16 +810,16 @@ bool Board::isSquareControlled(int r, int c)
   /*
    * Check pawn's move
    */
-  i = (player == 1)? (r + 1) : (r - 1);
+  i = player? (r - 1) : (r + 1);
   j = c - 1; // left column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (player == 1? BP : WP)) return true;
+    if (board[i][j] == (player? WP : BP)) return true;
   }
-  j = c + 1;
+  j = c + 1; // right column
   if (i >= 0 && i < 8 && j >= 0 && j < 8)
   {
-    if (board[i][j] == (player == 1? BP : WP)) return true;
+    if (board[i][j] == (player? WP : BP)) return true;
   }
 
   /*
@@ -690,7 +831,7 @@ bool Board::isSquareControlled(int r, int c)
     j = c + dir[d][1];
     if (i >= 0 && i < 8 && j >= 0 && j < 8)
     {
-      if (board[i][j] == (player == 1? BK : WK)) return true;
+      if (board[i][j] == (player? WK : BK)) return true;
     }
   }
 
@@ -700,6 +841,8 @@ bool Board::isSquareControlled(int r, int c)
 
 bool Board::isInRay(int x1, int y1, int x2, int y2, int x3, int y3)
 {
+  // sai khi 3 con cung hang
+
   return ((x1 - x2) * (y1 - y3) == (x1 - x3) * (y1 - y2)) // 3 squares are in a line
-         && ((x2 >= x1 && x2 < x3) || (x2 <= x1 && x2 > x3)); // square 2 is in the middle (or square 1 is square 2)
+         && ((x2 >= x1 && x2 <= x3) || (x2 <= x1 && x2 >= x3)) && ((y2 >= y1 && y2 <= y3) || (y2 <= y1 && y2 >= y3)); // square 2 is in the middle (or square 1 is square 2)
 }

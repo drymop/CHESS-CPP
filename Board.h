@@ -26,7 +26,7 @@ public:
 
   /**
    * Get current player
-   * @return 0 if game is ended, 1 if player 1, 2 if player 2
+   * @return 0 for white, 1 for black
    */
   int getPlayer();
 
@@ -39,10 +39,40 @@ public:
   int getPiece(int square);
 
   /**
-   * Call when a player chooses a square (to make a move, call this function twice)
+   * Return the number of moves available
+   */
+  int getNumMoves();
+
+  /**
+   * Get the list of available moves
+   */
+  std::vector<int> getMoveList();
+
+  /**
+   * Execute a move at once.
+   * Should be called when all parameters of the move (starting square, ending square, promotion if necessary) have already been decided.
+   * @param moveIndex: the move number according to move list (starting from 0)
+   */
+  void makeMove(int moveIndex);
+
+  /**
+   * Execute a move in subsequent parts. To make a move, call this function twice for starting square and ending square.
+   * If there is a promotion event, also need to call the promote function to set the promoted piece.
    * @param square: a square number between 0 and 63
    */
   void chooseSquare(int square);
+
+  /**
+   * Check if there is a promotion event
+   * @return true if there is promotion
+   */
+  bool hasPromotion();
+
+  /**
+   * Choose which piece to promote to
+   * @param piece: the piece type
+   */
+  void promote(int piece);
 
 private:
   /**
@@ -53,7 +83,7 @@ private:
   int board[8][8];
 
   /**
-   * The current player. Can be 1 or 2 (for white or black)
+   * The current player. Can be 0 for white or 1 for black (false or true when casted to bool)
    */
   int player;
 
@@ -70,8 +100,9 @@ private:
    */
   int chosenSquare;
 
-   /**
-   * move a piece from square (x1, y1) to (x2, y2)
+  /**
+   * Execute a move from square1 to square2
+   * If the move is a promotion, set the promotion flag and return without promoting the pawn
    * @param square1, square2: the starting and ending square (from 0 to 63)
    */
   void makeMove(int square1, int square2);
@@ -93,20 +124,28 @@ private:
    * The cols of last double jump pawns of opponent, value from 0 to 63, -1 if last move is not a double jump
    * Use for enpassant checking
    */
-   int enPassantCols[2];
-
-   /**
-    * Order: king, left rook, right rook. The even flags are for white, and the odds black
-    * True if the piece has not moved, false otherwise
-    */
-   bool castlingFlags[6];
+  int enPassantCols[2];
 
   /**
-   * 8 basic directions
+   * Keep track of whether the kings and rooks have moved. Used for castling.
+   * Order: king, left rook, right rook. The even flags are for white, and the odds are for black.
+   * True if the piece has not moved, false otherwise.
+   */
+  bool castlingFlags[6];
+
+  /**
+   * The square that are having a promotion event (0 -> 63).
+   * -1 if there is no promotion event.
+   */
+  int promotionSquare;
+
+  /**
+   * 8 basic directions.
+   * The first 4 are vertical and horizontal. The last 4 are diagonal.
    */
   static const int dir[8][2];
   /**
-   * 8 knight's directions
+   * 8 knight's directions (L shape)
    */
   static const int dirKnight[8][2];
   /**
@@ -117,8 +156,11 @@ private:
     MOVE_NORMAL,
     MOVE_CASTLING,
     MOVE_PAWN_DOUBLE_JUMP,
-    MOVE_PAWN_PROMOTION,
-    MOVE_PAWN_EN_PASSANT
+    MOVE_PAWN_EN_PASSANT,
+    MOVE_PROMOTION_QUEEN,
+    MOVE_PROMOTION_ROOK,
+    MOVE_PROMOTION_KNIGHT,
+    MOVE_PROMOTION_BISHOP
   };
 
   /**

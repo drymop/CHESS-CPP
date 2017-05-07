@@ -10,6 +10,8 @@
 
 #include <BoardGUI.h>
 #include <Board.h>
+#include <HumanPlayer.h>
+#include <RandomPlayer.h>
 
 
 
@@ -39,6 +41,10 @@ int main(int argc, char* argv[])
 {
   SDL_Window* window;
   SDL_Renderer* renderer;
+  /**
+   * Quit flag
+   */
+  bool quit = false;
 
   if( !initGraphic(window, renderer) ) return 0; //quit if cannot initialize graphic
 
@@ -52,23 +58,22 @@ int main(int argc, char* argv[])
   bgui.initGUI(renderer);
   bgui.draw(renderer);
 
+  Player** players = new Player*[2];
+  players[0] = new RandomPlayer(&b);
+  players[1] = new RandomPlayer(&b);
+
   int move = 0;
-  do
+  while (!quit)
   {
-    move = bgui.getMove();
-    if (move == 0) {
-      continue;
-    }
-    else if (move == -1)
+    players[b.getPlayer()]->decideMove();
+    bgui.draw(renderer);
+    move = 0;
+    while (move == 0)
     {
-      break;
+      move = bgui.getMove();
     }
-    else
-    {
-      b.chooseSquare(move-1);
-      bgui.draw(renderer);
-    }
-  }while(true);
+    if (move == -1) break;
+  }
 
   quitGraphic(window, renderer);
   return 0;
