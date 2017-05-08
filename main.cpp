@@ -13,6 +13,7 @@
 #include <Board.h>
 #include <HumanPlayer.h>
 #include <RandomPlayer.h>
+#include <AIPlayer.h>
 
 
 
@@ -48,10 +49,6 @@ int main(int argc, char* argv[])
 {
   SDL_Window* window;
   SDL_Renderer* renderer;
-  /**
-   * Quit flag
-   */
-  //bool quit = false;
 
   if( !initGraphic(window, renderer) ) return 0; //quit if cannot initialize graphic
 
@@ -68,8 +65,10 @@ int main(int argc, char* argv[])
   Player** players = new Player*[2];
   //players[0] = new RandomPlayer(&b);
   //players[1] = new RandomPlayer(&b);
-  players[0] = new HumanPlayer(&bgui, &b);
-  players[1] = new HumanPlayer(&bgui, &b);
+  //players[0] = new HumanPlayer(&bgui, &b);
+  //players[1] = new HumanPlayer(&bgui, &b);
+  players[0] = new AIPlayer(&b, 2);
+  players[1] = new AIPlayer(&b, 2);
 
   playGame(&b, players, &bgui, renderer);
 
