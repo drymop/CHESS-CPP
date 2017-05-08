@@ -455,7 +455,7 @@ void Board::updateMoveList()
 {
   moveList.clear();
   findPinAndCheck();
-  printf("Check: %i %i\n", checkingPieces[0], checkingPieces[1]);
+  //printf("Check: %i %i\n", checkingPieces[0], checkingPieces[1]);
   // loop through all squares, and update player's pieces in those squares
   for (int i = 0; i < 8; i++)
   {
@@ -476,8 +476,8 @@ void Board::updateMoveList()
       }
     }
   }
-  printMoveList();
-  printHistory();
+  //printMoveList();
+  //printHistory();
 }
 
 void Board::findPinAndCheck()
@@ -512,7 +512,6 @@ void Board::findPinAndCheck()
         if (player == (board[i][j] < 6)) // if it's a friendly piece
         {
           pinnedSquare = i * 8 + j;
-          printf("Find pin and check pinned square %i\n", pinnedSquare);
         }
         else // if it's opponent's piece
         {
