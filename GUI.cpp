@@ -15,6 +15,8 @@ GUI::~GUI()
   boxes = NULL;
 }
 
+bool GUI::quit = false;
+
 GUI::Box::Box(int x1, int y1, int x2, int y2, int value)
 {
   this->x1 = x1;
@@ -39,14 +41,10 @@ bool GUI::Box::contains(int x, int y)
   return containP;
 }
 
-void GUI::setBoxes(Box box[], int size)
+void GUI::setBoxes(Box* box, int size)
 {
   this->boxes = box;
   this->numBox = size;
-  /*for(int i = 0; i < this->numBox; i++) {
-    printf("Setting: ");
-    this->boxes[i].printBox();
-  }*/
 }
 
 void GUI::printAllBox()
@@ -57,18 +55,19 @@ void GUI::printAllBox()
     this->boxes[i].printBox();
   }
 }
-int GUI::getMove()
+int GUI::getInput()
 {
-  //printAllBox();
   //Get mouse coordinate
+  int boxClicked = 0;
   SDL_Event e;
-  while(SDL_PollEvent(&e) != 0)
+  while(SDL_PollEvent(&e) != 0) //iterate through all existing event
   {
-    if(e.type == SDL_QUIT)
+    if(e.type == SDL_QUIT) //if user quit, change quit flag and return immediately
     {
-      return -1;
+      GUI::quit = true;
+      return 0;
     }
-    else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+    else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) // if user left-clicks
     {
       int mouseX = e.button.x;
       int mouseY = e.button.y;
@@ -79,10 +78,11 @@ int GUI::getMove()
       {
         if(boxes[i].contains(mouseX, mouseY))
         {
-          return boxes[i].boxValue;
+          boxClicked = boxes[i].boxValue;
+          break;
         }
       }
     }
   }
-  return 0;
+  return boxClicked;
 }

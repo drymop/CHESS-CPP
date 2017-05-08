@@ -43,9 +43,17 @@ public:
   int getPiece(int square);
 
   /**
-   * Return the number of moves available
+   * Get the number of moves available
+   * @return the number of available legal moves for the current player.
    */
   int getNumMoves();
+
+  /**
+   * Return the winner of the game.
+   * Should only be called after the game ended (getNumMoves() == 0).
+   * @return 0 if white wins, 1 if black wins, and 2 if tie.
+   */
+  int getWinner();
 
   /**
    * Get the list of available moves

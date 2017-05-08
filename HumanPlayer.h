@@ -7,7 +7,7 @@
 class HumanPlayer : public Player
 {
   public:
-    HumanPlayer(BoardGUI* brdGUI, Board* brd, bool* quit);
+    HumanPlayer(BoardGUI* brdGUI, Board* brd);
     ~HumanPlayer();
 
     void decideMove();

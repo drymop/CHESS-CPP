@@ -8,6 +8,7 @@
 #include <SDL_image.h>
 #include <stdio.h>
 
+#include <GUI.h>
 #include <BoardGUI.h>
 #include <Board.h>
 #include <HumanPlayer.h>
@@ -36,6 +37,12 @@ bool initGraphic(SDL_Window* &window, SDL_Renderer* &rederer);
  */
 void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 
+/**
+ * Play a game of chess. and return the winner
+ * @return 0 for white, 1 for black, and 2 for draw
+ */
+int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer);
+
 
 int main(int argc, char* argv[])
 {
@@ -44,14 +51,14 @@ int main(int argc, char* argv[])
   /**
    * Quit flag
    */
-  bool quit = false;
+  //bool quit = false;
 
   if( !initGraphic(window, renderer) ) return 0; //quit if cannot initialize graphic
 
   /**
-   * Init GUIs
+   * Init GUIs and board
    */
-
+  GUI::quit = false;
   Board b;
   BoardGUI bgui(&b);
 
@@ -61,26 +68,36 @@ int main(int argc, char* argv[])
   Player** players = new Player*[2];
   //players[0] = new RandomPlayer(&b);
   //players[1] = new RandomPlayer(&b);
-  players[0] = new HumanPlayer(&bgui, &b, &quit);
-  players[1] = new HumanPlayer(&bgui, &b, &quit);
+  players[0] = new HumanPlayer(&bgui, &b);
+  players[1] = new HumanPlayer(&bgui, &b);
+
+  playGame(&b, players, &bgui, renderer);
 
   int move = 0;
-  while (!quit)
+  while (!move)
   {
-    players[b.getPlayer()]->decideMove();
-    bgui.draw(renderer);
-    /*move = 0;
-    while (move == 0)
-    {
-      move = bgui.getMove();
-    }
-    if (move == -1) break;*/
+    bgui.getInput();
+    if (GUI::quit) break;
   }
 
   quitGraphic(window, renderer);
   return 0;
 }
 
+int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
+{
+  while (b->getNumMoves() != 0)
+  {
+    // player moves
+    players[b->getPlayer()]->decideMove();
+    // if quit
+    bgui->getInput();
+    if (GUI::quit) break;
+    // draw board
+    bgui->draw(renderer);
+  }
+  printf("Player %i wins!", b->getWinner()+1);
+}
 
 bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer)
 {

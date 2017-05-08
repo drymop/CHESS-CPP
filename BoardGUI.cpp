@@ -22,6 +22,7 @@ void BoardGUI::initGUI(SDL_Renderer* renderer)
   //if (!loadBoard) printf("null chessboared");
   piecesSprite.loadFromFile(renderer, "img/pieces.png");
   //if(!loadPiece) printf("null piece");
+  // piece can be made transparent
   piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND);
 
   //position of piece's image on sprite sheet
@@ -34,12 +35,10 @@ void BoardGUI::initGUI(SDL_Renderer* renderer)
     int y = 55 + (7 - i/8) * 590 / 8;
     boardSquares[i] = {x, y ,73, 73};
   }
-
 }
 
 void BoardGUI::draw(SDL_Renderer* renderer)
 {
-  printf("GUI drawing\n");
   // Clear screen with white color
   SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
   SDL_RenderClear( renderer );
@@ -69,8 +68,4 @@ void BoardGUI::draw(SDL_Renderer* renderer)
     }
   }
   SDL_RenderPresent(renderer);
-  if (renderer == NULL)
-  {
-    printf("gui draw null renderer\n");
-  }
 }

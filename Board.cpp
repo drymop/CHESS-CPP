@@ -92,6 +92,22 @@ int Board::getNumMoves()
   return moveList.size()/3;
 }
 
+int Board::getWinner()
+{
+  // in case game hasn't ended
+  if (moveList.size() != 0) return -1;
+
+  // if game ended, decide if checkmate or stalemate
+  if (checkingPieces[0] != -1)
+  {
+    return 1-player;
+  }
+  else
+  {
+    return 2;
+  }
+}
+
 std::vector<int> Board::getMoveList()
 {
   return moveList;

@@ -9,7 +9,8 @@ public:
   ~Player();
 
   /**
-   * Decide which move to go, and change the board
+   * Decide which move to go, and make the move
+   * Must return almost immediately if user quits
    */
   virtual void decideMove() = 0;
 };

@@ -1,34 +1,27 @@
 #include "HumanPlayer.h"
 #include <stdio.h>
 
-HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd, bool* quit)
+HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd)
 {
   bGUI = brdGUI;
   b = brd;
-  quitGame = quit;
 }
 
 void HumanPlayer::decideMove()
 {
+  // TO DO: add promotion gui
   int move = 0;
   while (move == 0)
   {
-    move = bGUI->getMove();
+    move = bGUI->getInput();
+    if (GUI::quit) return;
   }
-  if (move == -1)
+  if (b->hasPromotion())
   {
-    *quitGame = true; //quit game
-    return;
+    b->promote(move);
   }
   else
   {
-    if (b->hasPromotion())
-    {
-      b->promote(move);
-    }
-    else
-    {
-      b->chooseSquare(move-1);
-    }
+    b->chooseSquare(move-1);
   }
 }

@@ -7,7 +7,7 @@
 /**
  * Abstract class contains an array of "box" (or click zones), each box has a distinct value
  * Has function getMove() to return the value of box clicked
- * Derive this cl
+ * Derive this class to make different guis
  */
 
 class GUI
@@ -30,7 +30,7 @@ class GUI
         /**
          * Create a box
          * @param x1, y1, x2, y2 bounds of the box
-         * @param value the value of the box. Value cannot be -1 or 0
+         * @param value the value of the box. Value of 0 will causes undefined behavior.
          */
         Box() {};
         Box(int x1, int y1, int x2, int y2, int value);
@@ -46,20 +46,24 @@ class GUI
   public:
     GUI();
     ~GUI();
+
+    /*
+     * Quit flag
+     */
+    static bool quit;
     /**
      * Set the box array of GUI
      * @param boxes[] an array of boxes to be used
      * @param size the size of the array
      */
-    void setBoxes(Box box[], int size);
+    void setBoxes(Box* box, int size);
 
     /**
-     * Get which box is clicked
+     * Get user's click
      * @return value of the clicked box
-     *         -1 if user quit
-     *         0 if there's no click
+     *         0 if there's no click or if user quits
      */
-    int getMove();
+    int getInput();
 
     /**
      * Draw the GUI on the screen
@@ -69,7 +73,6 @@ class GUI
   private:
     Box* boxes;
     int numBox;
-
 };
 
 #endif // GUI_H
