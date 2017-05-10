@@ -11,13 +11,17 @@ class BoardGUI : public GUI
   public:
     /**
      * Create an array of box and pass it to parent class GUI through GUI.setBoxes()
-     */
-    BoardGUI(Board* brd);
-    /**
      * Load images to use in game (in the form of TextureWrapper)
+     * @param brd the pointer to the drawn board
      * @param renderer the renderer of the window to be drawn on
      */
-    void initGUI(SDL_Renderer* renderer);
+    BoardGUI(Board* brd, SDL_Renderer* renderer);
+
+    /**
+     * Use to satisfy GUI requirement only
+     * Should not be called
+     */
+    void draw() {};
 
     /**
      * draw the chessboard screen
