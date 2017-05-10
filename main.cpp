@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
   //players[1] = new RandomPlayer(&b);
   //players[0] = new HumanPlayer(&bgui, &b);
   //players[1] = new HumanPlayer(&bgui, &b);
-  players[0] = new AIPlayer(&b, 2);
-  players[1] = new AIPlayer(&b, 2);
+  players[0] = new AIPlayer(&b, &bgui, 2);
+  players[1] = new AIPlayer(&b, &bgui, 2);
 
   playGame(&b, players, &bgui, renderer);
 
