@@ -11,13 +11,22 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
    * Set an array of buttons so that GUI can get input
    */
   this->b = brd;
-  Box* boxArr = new Box[64];
+  Box* boxArr = new Box[70];
   for(int i = 0; i < 64; i++) {
     int x = 48 + (i%8) * 507 / 8;
     int y = 50 + (7- i/8) * 507 / 8;
     boxArr[i] = {x, y , x+60, y+60, i+1};
   }
-  setBoxes(boxArr, 64);
+  //undo and home button
+  boxArr[64] = {626, 18, 682, 87, -1};//undo button
+  boxArr[65] = {721, 18, 782, 87, -2};//home button
+  boxArr[66] = {611, 342, 790, 392, -3};//queen promote
+  boxArr[67] = {611, 403, 790, 453, -4};//rook promote
+  boxArr[68] = {611, 465, 790, 515, -5};//bishop promote
+  boxArr[69] = {611, 528, 790, 578, -6};//knight promote
+
+
+  setBoxes(boxArr, 70);
 
   /*
    * Init textures and rects
@@ -56,10 +65,10 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
   playerTxtRect = {633, 106, 141, 52};
   colorSymbolRect = {620, 175, 164, 88};
   promoteTxtRect = {613, 290, 172, 290};
-  promotePieceRects[0] = {617, 350, 50, 50};
-  promotePieceRects[1] = {617, 411, 50, 50};
-  promotePieceRects[2] = {617, 475, 50, 50};
-  promotePieceRects[3] = {617, 536, 50, 50};
+  promotePieceRects[0] = {617, 342, 50, 50};
+  promotePieceRects[1] = {617, 403, 50, 50};
+  promotePieceRects[2] = {617, 465, 50, 50};
+  promotePieceRects[3] = {617, 528, 50, 50};
 }
 
 void BoardGUI::draw(SDL_Renderer* renderer)
@@ -99,8 +108,18 @@ void BoardGUI::draw(SDL_Renderer* renderer)
   undoButton.render(renderer, NULL, &undoRect);
   homeButton.render(renderer, NULL, &homeRect);
   playerTxt.render(renderer, NULL, &playerTxtRect);
-  colorSymbols[1].render(renderer, NULL, &colorSymbolRect);
-  promoteTxt.render(renderer, NULL, &promoteTxtRect);
+  colorSymbols[b->getPlayer()].render(renderer, NULL, &colorSymbolRect);
+
+  if (b->hasPromotion())
+  {
+    // Draw promotion options
+    promoteTxt.render(renderer, NULL, &promoteTxtRect);
+    int color = b->getPlayer()? 0 : 6;
+    piecesSprite.render(renderer, &pieceClips[BQ + color], &promotePieceRects[0]);
+    piecesSprite.render(renderer, &pieceClips[BR + color], &promotePieceRects[1]);
+    piecesSprite.render(renderer, &pieceClips[BB + color], &promotePieceRects[2]);
+    piecesSprite.render(renderer, &pieceClips[BN + color], &promotePieceRects[3]);
+  }
 
 
   SDL_RenderPresent(renderer);

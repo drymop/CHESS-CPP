@@ -9,19 +9,38 @@ HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd)
 
 void HumanPlayer::decideMove()
 {
-  // TO DO: add promotion gui
-  int move = 0;
-  while (move == 0)
+
+  int input = 0;
+  while (input == 0)
   {
-    move = bGUI->getInput();
+    input = bGUI->getInput();
     if (GUI::quit) return;
   }
-  if (b->hasPromotion())
+
+  if (input > 0) //normal move
   {
-    b->promote(move);
+    if (b->hasPromotion())
+    {
+      //flash promotion pawn
+    }
+    else
+    {
+      b->chooseSquare(input - 1); //square start from 0, so need to substract 1
+    }
   }
-  else
+  else //side bar move
   {
-    b->chooseSquare(move-1);
+    printf("not normal move! %i \n", input);
+    switch (input)
+    {
+      case -1: // undo
+        b->undoMove();
+        b->undoMove();
+        break;
+      case -2: // home
+
+
+    }
   }
+
 }

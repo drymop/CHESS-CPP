@@ -69,10 +69,10 @@ int main(int argc, char* argv[])
   Player** players = new Player*[2];
   //players[0] = new RandomPlayer(&b);
   //players[1] = new RandomPlayer(&b);
-  //players[0] = new HumanPlayer(&bgui, &b);
-  //players[1] = new HumanPlayer(&bgui, &b);
-  players[0] = new AIPlayer(&b, &bgui, 5);
-  players[1] = new AIPlayer(&b, &bgui, 5);
+  players[0] = new HumanPlayer(&bgui, &b);
+  players[1] = new HumanPlayer(&bgui, &b);
+  //players[0] = new AIPlayer(&b, &bgui, 5);
+  //players[1] = new AIPlayer(&b, &bgui, 5);
 
   sgui.draw(renderer);
   bgui.draw(renderer);
@@ -97,6 +97,8 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
   {
     // player moves
     players[b->getPlayer()]->decideMove();
+    // if back to start gui
+
     // if quit
     bgui->getInput();
     if (GUI::quit) break;
