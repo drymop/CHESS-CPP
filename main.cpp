@@ -10,7 +10,10 @@
 
 #include <GUI.h>
 #include <BoardGUI.h>
+#include <StartGUI.h>
+
 #include <Board.h>
+
 #include <HumanPlayer.h>
 #include <RandomPlayer.h>
 #include <AIPlayer.h>
@@ -20,8 +23,8 @@
 /**
  * Sizes and title of the game window
  */
-const int SCREEN_WIDTH = 700;
-const int SCREEN_HEIGHT = 700;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 const char* WINDOW_TITLE = "Chess Game by lmtuan";
 
 
@@ -55,22 +58,27 @@ int main(int argc, char* argv[])
   /**
    * Init GUIs and board
    */
-  GUI::quit = false;
   Board b;
+
+  GUI::quit = false;
+  StartGUI sgui(renderer);
   BoardGUI bgui(&b, renderer);
 
 
-  bgui.draw(renderer);
 
   Player** players = new Player*[2];
   //players[0] = new RandomPlayer(&b);
   //players[1] = new RandomPlayer(&b);
   //players[0] = new HumanPlayer(&bgui, &b);
   //players[1] = new HumanPlayer(&bgui, &b);
-  players[0] = new AIPlayer(&b, 2);
-  players[1] = new AIPlayer(&b, 2);
+  players[0] = new AIPlayer(&b, &bgui, 5);
+  players[1] = new AIPlayer(&b, &bgui, 5);
+
+  sgui.draw(renderer);
+  bgui.draw(renderer);
 
   playGame(&b, players, &bgui, renderer);
+  bgui.getInput();
 
   int move = 0;
   while (!move)
