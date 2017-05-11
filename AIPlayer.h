@@ -17,6 +17,7 @@ class AIPlayer : public Player
   private:
     Board* b;
     BoardGUI* bgui;
+    Board bSave;
     int lookAhead;
     int bestMove;
     int numNodes;
@@ -35,6 +36,14 @@ class AIPlayer : public Player
      * @return the score of the board (in white's perspective)
      */
     int heuristicEval(int depth);
+
+
+    /**
+     * For debugging
+     * Find out if board changed after make move
+     */
+    void saveBoard();
+    bool isBoardDifferent();
 };
 
 #endif // AIPLAYER_H

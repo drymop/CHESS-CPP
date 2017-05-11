@@ -5,15 +5,31 @@ AIPlayer::AIPlayer(Board* brd, BoardGUI* brdgui, int difficulty)
 {
   b = brd;
   bgui = brdgui;
-  lookAhead = 5;
+  lookAhead = difficulty;
+}
+
+void AIPlayer::saveBoard()
+{
+  bSave = *b;
+}
+
+bool AIPlayer::isBoardDifferent()
+{
+  return b->isDifferent(bSave);
 }
 
 void AIPlayer::decideMove()
 {
+  saveBoard();
   bestMove = -1;
   numNodes = 0;
   int color = (b->getPlayer() == 0)? 1 : -1;
   negamax(lookAhead, -MATE_VALUE, MATE_VALUE, color);
+  if (isBoardDifferent())
+  {
+    GUI::quit = true;
+    return;
+  }
   printf("Looked through %i nodes\n", numNodes);
   /*if (GUI::quit)
   {

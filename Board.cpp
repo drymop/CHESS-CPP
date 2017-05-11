@@ -10,6 +10,171 @@ Board::Board()
 }
 Board::~Board() {};
 
+bool Board::isDifferent(Board& b)
+{
+  printf("Comparing\n");
+  bool rv = false;
+  bool different = false;
+  if (this->player != b.player)
+  {
+    rv = true;
+    printf("  Player: %i - %i\n", this->player, b.player);
+  }
+  for (int s = 0; s < 64; s++)
+  {
+    if (this->board[s/8][s%8] != b.board[s/8][s%8])
+    {
+      different = true;
+      break;
+    }
+  }
+  if (different)
+  {
+    rv = true; different = false;
+    printf("  Board:\n");
+    for (int i = 7; i >= 0; i--)
+    {
+      printf("  ");
+      this->printBoard(i);
+      printf("    ");
+      b.printBoard(i);
+      printf("\n");
+    }
+  }
+
+  if (this->moveList.size() != b.moveList.size())
+  {
+    different = true;
+  }
+  else
+  {
+    for (int i = 0; i < b.moveList.size(); i++)
+    {
+      if (this->moveList[i] != b.moveList[i])
+      {
+        different = true;
+        break;
+      }
+    }
+  }
+  if (different)
+  {
+    different = false; rv = true;
+    printf("  Move List\n");
+    int i;
+    for (i = 0; i < this->moveList.size(); i+=3)
+    {
+      printf("  ");
+      this->printMoveList(i/3);
+      printf("    ");
+      if (i < b.moveList.size()) b.printMoveList(i/3);
+      printf("\n");
+    }
+    for (i; i < b.moveList.size(); i+=3)
+    {
+      printf("    ");
+      b.printMoveList(i/3);
+      printf("\n");
+    }
+  }
+
+  if (this->history.size() != b.history.size())
+  {
+    different = true;
+  }
+  else
+  {
+    for (int i = 0; i < b.history.size(); i+=4)
+    {
+      if (this->history[i/4] != b.history[i/4])
+      {
+        different = true;
+        break;
+      }
+    }
+  }
+  if (different)
+  {
+    different = false; rv = true;
+    printf("  History:\n");
+    int i;
+    for (i = 0; i < this->history.size(); i+= 4)
+    {
+      printf("  ");
+      this->printHistory(i/4);
+      printf("    ");
+      if (i < b.history.size()) b.printHistory(i/4);
+      printf("\n");
+    }
+    for (i; i < b.history.size(); i+4)
+    {
+      printf("    ");
+      b.printHistory(i/4);
+      printf("\n");
+    }
+  }
+
+  if (this->chosenSquare != b.chosenSquare)
+  {
+    rv = true;
+    printf("  Choose square: %i - %i\n", this->chosenSquare, b.chosenSquare);
+  }
+
+  if (this->kingSquares[0] != b.kingSquares[0] || this->kingSquares[1] != b.kingSquares[1])
+  {
+    rv = true;
+    printf("  Kingsquare: %i %i - %i %i\n", this->kingSquares[0], this->kingSquares[1], b.kingSquares[0], b.kingSquares[1]);
+  }
+
+  for (int i = 0; i < 6; i++)
+  {
+    if (this->castlingFirstMove[i] != b.castlingFirstMove[i])
+    {
+      different = true;
+      break;
+    }
+  }
+  if (different)
+  {
+    different = false; rv = true;
+    printf("  Castling:\n");
+    for (int i = 0; i < 6; i++)
+    {
+      printf("  %i %i\n", this->castlingFirstMove[i], b.castlingFirstMove[i]);
+    }
+  }
+  if (this->promotionSquare != b.promotionSquare)
+  {
+    rv = true;
+    printf("  Promte: %i %i\n", this->promotionSquare, b.promotionSquare);
+  }
+  return rv;
+}
+
+Board::Board(const Board& b)
+{
+  this->player = b.player;
+  for (int i = 0; i < 64; i++)
+  {
+    this->board[i/8][i%8] = b.board[i/8][i%8];
+  }
+  for (int i = 0; i < b.moveList.size(); i++)
+  {
+    this->moveList.push_back(b.moveList[i]);
+  }
+  for (int i = 0; i < b.history.size(); i++)
+  {
+    this->history.push_back(b.history[i]);
+  }
+  this->chosenSquare = b.chosenSquare;
+  this->kingSquares[0] = b.kingSquares[0]; this->kingSquares[1] = b.kingSquares[1];
+  for (int i = 0; i < 6; i++)
+  {
+    this->castlingFirstMove[i] = b.castlingFirstMove[i];
+  }
+  this->promotionSquare = b.promotionSquare;
+}
+
 const int Board::dir[8][2] = { {0, 1}, {0, -1}, {1, 0}, {-1, 0},
                                {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };
 const int Board::dirKnight[8][2] = { {1, 2}, {1, -2}, {-1, 2}, {-1, -2},
@@ -74,6 +239,11 @@ void Board::initBoard()
 
 int Board::getPiece(int square)
 {
+  return board[square/8][square%8];
+}
+
+int Board::getPieceGUI(int square)
+{
   int piece = board[square/8][square%8];
   if (square == chosenSquare)
   {
@@ -113,38 +283,70 @@ std::vector<int> Board::getMoveList()
   return moveList;
 }
 
-void Board::printBoard()
+std::vector<int> Board::getHistory()
 {
-  printf("Printing Board\n");
-  for (int i = 7; i >= 0; i--)
+  return history;
+}
+
+int Board::getChosenSquare()
+{
+  return chosenSquare;
+}
+
+int Board:: getKingSquare(int which)
+{
+  return kingSquares[which];
+}
+
+int Board::getCastling(int which)
+{
+  return castlingFirstMove[which];
+}
+
+int Board::getPromotionSquare()
+{
+  return promotionSquare;
+}
+
+void Board::printBoard(int line)
+{
+  for (int j = 0; j < 8; j++)
   {
-    for (int j = 0; j < 8; j++)
+    char c;
+    switch(board[line][j])
     {
-      printf(" %i", board[i][j]);
+      case -1: c = '-'; break;
+      case WP: c = 'p'; break;
+      case WN: c = 'n'; break;
+      case WB: c = 'b'; break;
+      case WR: c = 'r'; break;
+      case WQ: c = 'q'; break;
+      case WK: c = 'k'; break;
+      case BP: c = 'P'; break;
+      case BN: c = 'N'; break;
+      case BB: c = 'B'; break;
+      case BR: c = 'R'; break;
+      case BQ: c = 'Q'; break;
+      case BK: c = 'K'; break;
     }
-    printf("\n");
+    printf("%c ", c);
   }
 }
 
-void Board::printMoveList()
+void Board::printMoveList(int moveNum)
 {
-  for (int i = 0; i < moveList.size(); i+=3)
-  {
-    char x1 = 'a' + moveList[i]%8;
-    char y1 = '1' + moveList[i]/8;
-    char x2 = 'a' + moveList[i+1]%8;
-    char y2 = '1' + moveList[i+1]/8;
-    printf("  %i) %c%c %c%c %i\n", (i/3 + 1), x1, y1, x2, y2, moveList[i+2]);
-  }
+  moveNum = 3 * moveNum;
+  char x1 = 'a' + moveList[moveNum]%8;
+  char y1 = '1' + moveList[moveNum]/8;
+  char x2 = 'a' + moveList[moveNum+1]%8;
+  char y2 = '1' + moveList[moveNum+1]/8;
+  printf("%i) %c%c %c%c %i", (moveNum/3 + 1), x1, y1, x2, y2, moveList[moveNum+2]);
 }
 
-void Board::printHistory()
+void Board::printHistory(int moveNum)
 {
-  printf("History:\n");
-  for (int i = 0; i < history.size(); i+=4)
-  {
-    printf("  %i) %c%i %c%i capture %i type %i\n", i/4 + 1, history[i]%8 + 'a', history[i]/8 +1, history[i+1]%8 + 'a', history[i+1]/8 +1, history[i+2], history[i+3]);
-  }
+  moveNum = moveNum * 4;
+  printf("%i) %c%i %c%i capture %i type %i", moveNum/4 + 1, history[moveNum]%8 + 'a', history[moveNum]/8 +1, history[moveNum+1]%8 + 'a', history[moveNum+1]/8 +1, history[moveNum+2], history[moveNum+3]);
 }
 
 void Board::makeMove(int moveIndex)
@@ -790,17 +992,18 @@ void Board::updatePawnMoves(int r, int c)
   int i,j;
   int moveForward = player? -1: 1; // white pawn moves up, black pawn moves down
 
+  bool canPromote = (r == (player? 1 : 6)); // is in the correct row for promotion
+  bool canDoubleJump = (r == (player? 6 : 1)); // is in the correct row for double jump
+  bool canEnPassant = (r == (player? 3 : 4))
+                      && (history.size() != 0) && (history[history.size()-1] == MOVE_PAWN_DOUBLE_JUMP); // is in the correct row for en passant, and the last move is a double jump
+
+
   /*
    * Move straight
    */
   // One square ahead
   i = r + moveForward;
   j = c;
-
-  bool canPromote = (i == 0) || (i == 7); // is in the correct row for promotion
-  bool canDoubleJump = (i == 2 || i == 5); // is in the correct row for double jump
-  bool canEnPassant = (r == (player? 3 : 4))
-                      && (history.size() != 0) && (history[history.size()-1] == MOVE_PAWN_DOUBLE_JUMP); // is in the correct row for en passant, and the last move is a double jump
 
   if (board[i][j] == -1 // empty square in front
       && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8))) // no king danger if move there

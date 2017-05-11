@@ -9,19 +9,22 @@ public:
   Board();
   ~Board();
 
+  Board(const Board& b);
+
+  bool isDifferent(Board& b);
+
   /**
    * For debugging purpose. Print to console board array
    */
-  void printBoard();
+  void printBoard(int line);
   /**
    * For debugging purpose. Print to console the list of moves
    */
-  void printMoveList();
+  void printMoveList(int moveNum);
   /**
    * For debugging purpose. Print to console the history of moves
    */
-  void printHistory();
-
+  void printHistory(int moveNum);
 
   /**
    * Starting board
@@ -39,6 +42,14 @@ public:
    * @param square: the square number between 0 and 63
    * @return type of the piece in that square (according to enum pieceTypes).
    * -1 if empty, +12 if square is chosen. +25 if square is potential move
+   */
+  int getPieceGUI(int square);
+
+  /**
+   * Get the piece in a square
+   * @param square: the square number between 0 and 63
+   * @return type of the piece in that square (according to enum pieceTypes).
+   * -1 if empty.
    */
   int getPiece(int square);
 
@@ -59,6 +70,16 @@ public:
    * Get the list of available moves
    */
   std::vector<int> getMoveList();
+
+  /**
+   * Get the history
+   */
+  std::vector<int> getHistory();
+
+  int getChosenSquare();
+  int getKingSquare(int which);
+  int getCastling(int which);
+  int getPromotionSquare();
 
   /**
    * Execute a move at once.
