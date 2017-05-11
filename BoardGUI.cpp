@@ -20,8 +20,8 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
   /*
    * Init textures and rects
    */
-  boardImg.loadFromFile(renderer, "img/board.jpg");
-  piecesSprite.loadFromFile(renderer, "img/pieces.png");
+  boardImg.loadFromFile(renderer, "img/boardGUI/board.jpg");
+  piecesSprite.loadFromFile(renderer, "img/boardGUI/pieces.png");
   // piece can be made transparent
   piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND);
 
@@ -44,7 +44,7 @@ void BoardGUI::draw(SDL_Renderer* renderer)
   SDL_RenderClear( renderer );
 
   // Draw chessboard
-  boardImg.render(renderer, 0, 0, NULL, NULL);
+  boardImg.render(renderer, 0, 0);
 
   // Draw click boxes
   //SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0x00 );
@@ -53,7 +53,7 @@ void BoardGUI::draw(SDL_Renderer* renderer)
   // Draw all chess pieces from board
   for (int i = 0; i < 64; i++)
   {
-    int piece = b->getPiece(i);
+    int piece = b->getPieceGUI(i);
     if (piece >= 0 && piece < 12)
     {
       // if piece is not chosen, draw as normal
