@@ -18,12 +18,6 @@ class BoardGUI : public GUI
     BoardGUI(Board* brd, SDL_Renderer* renderer);
 
     /**
-     * Use to satisfy GUI requirement only
-     * Should not be called
-     */
-    void draw() {};
-
-    /**
      * draw the chessboard screen
      * @param renderer the renderer of the window to be drawn on
      */
@@ -36,8 +30,16 @@ class BoardGUI : public GUI
      */
     Board* b;
     TextureWrapper bgImg, boardImg, piecesSprite;
+    TextureWrapper undoButton, undoButtonFaded, undoButtonGlow;
+    TextureWrapper homeButton, homeButtonGlow;
+    TextureWrapper playerTxt, comTxt, promoteTxt;
+    TextureWrapper moveArrow;
+    TextureWrapper colorSymbols[2];
     const static Uint8 ALPHA_FADED = 100;
     const static Uint8 ALPHA_NORMAL = 255;
+
+
+
 
     /**
      * Coordinates of images of pieces on the sprite sheet
@@ -47,6 +49,8 @@ class BoardGUI : public GUI
      *  Coordinate of 64 squares of chessboard
      */
     SDL_Rect boardSquares[64];
-};
 
+    SDL_Rect undoRect, homeRect, playerTxtRect, colorSymbolRect, promoteTxtRect;
+    SDL_Rect promotePieceRects[4];
+};
 #endif // BOARDGUI_H
