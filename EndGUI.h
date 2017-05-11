@@ -1,22 +1,39 @@
 #ifndef ENDGUI_H
 #define ENDGUI_H
 #include "TextureWrapper.h"
+#include "GUI.h"
 
-class EndGUI
+class EndGUI: public GUI
 {
   public:
     EndGUI(SDL_Renderer* renderer);
+
     void draw(SDL_Renderer* renderer);
+
+    void setPlayer(int p);
+    void setWinner(int w);
   private:
-    TextureWrapper backgroundWin, backgroundLose;
-    TextureWrapper youWinTxt, youLoseTxt, whiteWinTxt, blackWinTxt;
+    TextureWrapper backgroundWin, backgroundLose, menuButton;
+    TextureWrapper youWinTxt, youLoseTxt, whiteWinTxt, blackWinTxt, drawTxt;
 
     static const int textX;
     static const int textY;
     static const int buttonX;
     static const int buttonY;
 
+    /**
+     * 0: white single player
+     * 1 black single player
+     * 2 2 players
+     */
+    int player;
 
+    /**
+     * 0: white wins
+     * 1: black wins
+     * 2: draw
+     */
+    int winner;
 
 };
 
