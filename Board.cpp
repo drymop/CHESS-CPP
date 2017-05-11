@@ -308,6 +308,26 @@ int Board::getPromotionSquare()
   return promotionSquare;
 }
 
+void Board::getChosenSquareMoves(std::vector<int>& squareMoves)
+{
+  // no chosen square
+  if (chosenSquare == -1) return;
+  // iterate through the moveList vector to find all the moves starting at chosenSquare
+  // All those moves should be next to each other, so
+  bool foundStartSquare = false;
+  for (int i = 0; i < moveList.size(); i+= 3)
+  {
+    if(moveList[i] == chosenSquare)
+    {
+      foundStartSquare = true;
+      squareMoves.push_back(moveList[i+1]);
+    }
+    else if (foundStartSquare)
+    {
+      break;
+    }
+  }
+}
 void Board::printBoard(int line)
 {
   for (int j = 0; j < 8; j++)

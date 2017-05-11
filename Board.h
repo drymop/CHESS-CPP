@@ -72,6 +72,12 @@ public:
   std::vector<int> getMoveList();
 
   /**
+   * Get all the legal moves from the chosen square
+   * @param the vector to put the moves into
+   */
+  void getChosenSquareMoves(std::vector<int>& squareMoves);
+
+  /**
    * Get the history
    */
   std::vector<int> getHistory();
