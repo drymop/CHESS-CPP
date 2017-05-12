@@ -10,7 +10,8 @@ class HumanPlayer : public Player
     HumanPlayer(BoardGUI* brdGUI, Board* brd);
     ~HumanPlayer();
 
-    void decideMove();
+    bool isHuman();
+    int decideMove();
 
   private:
     BoardGUI* bGUI;

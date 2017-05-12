@@ -12,7 +12,8 @@ class AIPlayer : public Player
     AIPlayer(Board* brd, BoardGUI* brdgui, int difficulty);
     ~AIPlayer();
 
-    void decideMove();
+    bool isHuman();
+    int decideMove();
 
   private:
     Board* b;

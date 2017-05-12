@@ -2,10 +2,10 @@
 
 Player::Player()
 {
-  //ctor
+  // empty constructor
 }
 
 Player::~Player()
 {
-  //dtor
+  // empty destructor
 }

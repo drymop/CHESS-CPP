@@ -13,6 +13,7 @@
 #include <StartGUI.h>
 
 #include <Board.h>
+#include <PieceType.h>
 
 #include <HumanPlayer.h>
 #include <RandomPlayer.h>
@@ -43,7 +44,7 @@ void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 
 /**
  * Play a game of chess. and return the winner
- * @return 0 for white, 1 for black, and 2 for draw
+ * @return 0 for white, 1 for black, 2 for draw, and -1 for premature quit (back to start screen or quit game)
  */
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer);
 
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
   bgui.draw(renderer);
 
   playGame(&b, players, &bgui, renderer);
-  bgui.getInput();
+  printf("Done playing");
 
   int move = 0;
   while (!move)
@@ -93,15 +94,67 @@ int main(int argc, char* argv[])
 
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
 {
+  int numUndo[2] = {1, 1};
+  int curPlayer, input;
   while (b->getNumMoves() != 0)
   {
-    // player moves
-    players[b->getPlayer()]->decideMove();
-    // if back to start gui
+    // get player's move
+    curPlayer = b->getPlayer();
+    input = players[curPlayer]->decideMove();
 
-    // if quit
-    bgui->getInput();
-    if (GUI::quit) break;
+    // make the move
+    if (players[curPlayer]->isHuman())
+    {
+    // if player is human, the value returned is a chosen square. Choose the appropriate square.
+      if (input == 0) {}
+      else if (input > 0) //olayer chose a square in board
+      {
+        // if there is a promotion event, cannot make move until player choose a promotion
+        if (b->hasPromotion())
+        {
+          //flash the promoted pawn
+        }
+        else
+        {
+          b->chooseSquare(input - 1);
+        }
+      }
+      else //player chose a button from side bar
+      {
+        int promoteTo;
+        switch (input)
+        {
+          case -1: // undo
+            if (numUndo[curPlayer] > 0)
+            {
+              b->undoMove();
+              b->undoMove();
+              numUndo[curPlayer]--;
+            }
+            break;
+          case -2: return -1; // return home
+          case -3: promoteTo = 0; break; //promote to queen
+          case -4: promoteTo = 1; break; //promote to rook
+          case -5: promoteTo = 2; break; //promote to bishop
+          case -6: promoteTo = 3; break; //promote to knight
+        }
+        if (b->hasPromotion())
+        {
+          b->promote(promoteTo);
+          printf("Promote to: %i", promoteTo);
+        }
+      }
+    }
+    else
+    {
+    //if is AI, the value returned is a move number. Make the move, and process input queue to catch quitting event.
+      b->makeMove(input);
+      bgui->getInput(); //process all input made during ai's thinking
+    }
+
+    // if quit or user chooses to return to start screen
+    if (GUI::quit || input == -2) return -1;
+
     // draw board
     bgui->draw(renderer);
   }

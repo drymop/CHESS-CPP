@@ -10,7 +10,8 @@ class RandomPlayer : public Player
     RandomPlayer(Board* brd);
     ~RandomPlayer();
 
-    void decideMove();
+    bool isHuman();
+    int decideMove();
 
   private:
     Board* b;

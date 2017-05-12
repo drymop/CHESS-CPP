@@ -8,6 +8,11 @@ AIPlayer::AIPlayer(Board* brd, BoardGUI* brdgui, int difficulty)
   lookAhead = difficulty;
 }
 
+bool AIPlayer::isHuman()
+{
+  return false;
+}
+
 void AIPlayer::saveBoard()
 {
   bSave = *b;
@@ -18,7 +23,7 @@ bool AIPlayer::isBoardDifferent()
   return b->isDifferent(bSave);
 }
 
-void AIPlayer::decideMove()
+int AIPlayer::decideMove()
 {
   saveBoard();
   bestMove = -1;
@@ -28,15 +33,11 @@ void AIPlayer::decideMove()
   if (isBoardDifferent())
   {
     GUI::quit = true;
-    return;
+    return 0;
   }
   printf("Looked through %i nodes\n", numNodes);
-  /*if (GUI::quit)
-  {
-    return;
-  }*/
   printf("AI Player best move is %i\n", bestMove);
-  b->makeMove(bestMove);
+  return bestMove;
 }
 
 int AIPlayer::negamax(int depth, int alpha, int beta, int color)

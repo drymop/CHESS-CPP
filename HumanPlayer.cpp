@@ -7,10 +7,15 @@ HumanPlayer::HumanPlayer(BoardGUI* brdGUI, Board* brd)
   b = brd;
 }
 
-void HumanPlayer::decideMove()
+bool HumanPlayer::isHuman()
+{
+  return true;
+}
+
+int HumanPlayer::decideMove()
 {
 
-  int input = 0;
+  /*int input = 0;
   while (input == 0)
   {
     input = bGUI->getInput();
@@ -37,10 +42,10 @@ void HumanPlayer::decideMove()
         b->undoMove();
         b->undoMove();
         break;
-      case -2: // home
+      case -2: break; // home
 
 
     }
-  }
-
+  }*/
+  return bGUI->getInput();
 }

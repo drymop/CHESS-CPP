@@ -8,10 +8,15 @@ RandomPlayer::RandomPlayer(Board* brd)
   b = brd;
 }
 
-void RandomPlayer::decideMove()
+bool RandomPlayer::isHuman()
+{
+  return false;
+}
+
+int RandomPlayer::decideMove()
 {
   int numMoves = b->getNumMoves();
 
-  int move = rand() % numMoves;
-  b->makeMove(move);
+  int randomMove = rand() % numMoves;
+  return randomMove;
 }
