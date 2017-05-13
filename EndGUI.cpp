@@ -18,6 +18,7 @@ EndGUI::EndGUI(SDL_Renderer* renderer)
 
   Box* boxArr = new Box[1];
   boxArr[0] = {buttonX, buttonY, buttonX + 292, buttonY + 94, 1};
+  setBoxes(boxArr, 1);
 }
 
 void EndGUI::setPlayer(int p)

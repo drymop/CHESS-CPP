@@ -11,6 +11,8 @@
 #include "AIPlayer.h"
 #include "Board.h"
 #include "BoardGUI.h"
+#include "ChooseComGUI.h"
+#include "EndGUI.h"
 #include "GUI.h"
 #include "HumanPlayer.h"
 #include "Player.h"
@@ -48,7 +50,6 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
 int main(int argc, char* argv[]) {
   SDL_Window* window;
   SDL_Renderer* renderer;
-
   if( !initGraphic(window, renderer) ) return 0; //quit if cannot initialize graphic
 
 
@@ -57,29 +58,79 @@ int main(int argc, char* argv[]) {
 
   GUI::quit = false;
   StartGUI sgui(renderer);
+
+  ChooseComGUI cgui(renderer);
+
   BoardGUI bgui(&b, renderer);
 
+  EndGUI egui(renderer);
   Player** players = new Player*[2];
 
-  sgui.draw(renderer);
+  int input;
+  while (true) {
+    b.initBoard();
 
-  //players[0] = new RandomPlayer(&b);
-  //players[1] = new RandomPlayer(&b);
-  //players[0] = new HumanPlayer(&bgui, &b);
-  players[1] = new HumanPlayer(&bgui, &b);
-  players[0] = new AIPlayer(&b, &bgui, 6);
-  //players[1] = new AIPlayer(&b, &bgui, 5);
-
-  bgui.draw(renderer);
-
-  playGame(&b, players, &bgui, renderer);
-  printf("Done playing");
-
-  int move = 0;
-  while (!move) {
-    bgui.getInput();
+    sgui.draw(renderer);
+    do {
+      input = sgui.getInput();
+    } while (input == 0 && !GUI::quit);
     if (GUI::quit) break;
+
+    if(input == StartGUI::INPUT_QUIT) {
+      break;
+    } else if (input == StartGUI::INPUT_MULTI_PLAYER) { // Human vs Human
+      players[0] = new HumanPlayer(&bgui, &b);
+      players[1] = new HumanPlayer(&bgui, &b);
+      egui.setPlayer(2);
+    } else {
+      cgui.openingAnimation(renderer);
+      cgui.draw(renderer);
+      // get which player
+
+      int comPlayer, difficulty;
+      do {
+        input = cgui.getInput();
+      } while (input == 0 && !GUI::quit);
+      if (GUI::quit) break;
+
+      switch (input) {
+        case ChooseComGUI::INPUT_WHITE_EASY  : comPlayer = 0; difficulty = 2; break;
+        case ChooseComGUI::INPUT_WHITE_MEDIUM: comPlayer = 0; difficulty = 4; break;
+        case ChooseComGUI::INPUT_WHITE_HARD  : comPlayer = 0; difficulty = 6; break;
+        case ChooseComGUI::INPUT_BLACK_EASY  : comPlayer = 1; difficulty = 2; break;
+        case ChooseComGUI::INPUT_BLACK_MEDIUM: comPlayer = 1; difficulty = 4; break;
+        case ChooseComGUI::INPUT_BLACK_HARD  : comPlayer = 1; difficulty = 6; break;
+      }
+      players[comPlayer] = new AIPlayer(&b, &bgui, difficulty);
+      players[1-comPlayer] = new HumanPlayer(&bgui, &b);
+      egui.setPlayer(1-comPlayer);
+      cgui.endingAnimation(renderer);
+    }
+
+    /*
+     * Play the game
+     */
+    int winner = playGame(&b, players, &bgui, renderer);
+    delete players[0]; players[0] = NULL;
+    delete players[1]; players[1] = NULL;
+    /*
+     * Congrat screen
+     */
+    if (winner == -1) {
+      // press red x button
+      if (GUI::quit) break;
+      // press home button
+      continue;
+    } else {
+      egui.setWinner(winner);
+    }
+    egui.draw(renderer);
+    do {
+      input = egui.getInput();
+    } while (input == 0);
+    printf("end gui input is %i\n", input);
   }
+  delete[] players;
 
   quitGraphic(window, renderer);
   return 0;

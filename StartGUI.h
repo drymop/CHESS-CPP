@@ -5,6 +5,13 @@
 class StartGUI: public GUI
 {
   public:
+    enum inputs{
+      INPUT_SINGLE_PLAYER = 1,
+      INPUT_MULTI_PLAYER,
+      INPUT_QUIT,
+    };
+
+
     StartGUI(SDL_Renderer* renderer);
 
     void draw(SDL_Renderer* renderer);

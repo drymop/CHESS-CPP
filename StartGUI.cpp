@@ -16,9 +16,9 @@ StartGUI::StartGUI(SDL_Renderer* renderer)
   background.loadFromFile(renderer, "img/startGUI/background.jpg");
 
   Box* boxArr = new Box[3];
-  boxArr[0] = {singleButtonX, singleButtonY, singleButtonX + 292, singleButtonY + 94, 1};
-  boxArr[1] = {multiButtonX, multiButtonY, multiButtonX + 292, multiButtonY + 94, 2};
-  boxArr[2] = {quitButtonX, quitButtonY, quitButtonX + 292, quitButtonY + 94, 3};
+  boxArr[0] = {singleButtonX, singleButtonY, singleButtonX + 292, singleButtonY + 94, INPUT_SINGLE_PLAYER};
+  boxArr[1] = {multiButtonX, multiButtonY, multiButtonX + 292, multiButtonY + 94, INPUT_MULTI_PLAYER};
+  boxArr[2] = {quitButtonX, quitButtonY, quitButtonX + 292, quitButtonY + 94, INPUT_QUIT};
 
   setBoxes(boxArr,3);
 }
