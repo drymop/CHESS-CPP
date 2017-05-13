@@ -9,12 +9,20 @@ public:
   Board();
   ~Board();
 
+  /**
+   * Copy constructor
+   */
   Board(const Board& b);
 
+  /**
+   * Compare 2 board and print out the difference
+   * Used in debugging
+   */
   bool isDifferent(Board& b);
 
   /**
-   * For debugging purpose. Print to console board array
+   * For debugging purpose. Print to console a row of the board
+   * @param line: the row of the board to be printed (0 is the lowest row, and 7 is the highest row)
    */
   void printBoard(int line);
   /**
@@ -75,7 +83,7 @@ public:
    * Get all the legal moves from the chosen square
    * @param the vector to put the moves into
    */
-  void getChosenSquareMoves(std::vector<int>& squareMoves);
+  void getMovesFromSquare(std::vector<int>& squareMoves);
 
   /**
    * Get the history

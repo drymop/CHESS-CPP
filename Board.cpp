@@ -148,6 +148,13 @@ bool Board::isDifferent(Board& b)
     rv = true;
     printf("  Promte: %i %i\n", this->promotionSquare, b.promotionSquare);
   }
+
+  if (rv) {
+    for (int i = 0; i < history.size(); i+= 4) {
+      printHistory(i/4); printf("\n");
+    }
+  }
+
   return rv;
 }
 
@@ -308,7 +315,7 @@ int Board::getPromotionSquare()
   return promotionSquare;
 }
 
-void Board::getChosenSquareMoves(std::vector<int>& squareMoves)
+void Board::getMovesFromSquare(std::vector<int>& squareMoves)
 {
   // no chosen square
   if (chosenSquare == -1) return;
@@ -488,7 +495,6 @@ void Board::chooseSquare(int square)
 
 void Board::makeMove(int square1,int square2)
 {
-  if (promotionSquare != -1) return;
   int moveType = -1;
   for (int i = 0; i < moveList.size(); i += 3)
   {
@@ -586,16 +592,14 @@ bool Board::hasPromotion()
   return promotionSquare != -1;
 }
 
-void Board::promote(int piece)
+void Board::promote(int which)
 {
-  piece = piece%6; //only care about the type
-  // change the pawn in the promotion square to the piece
-  switch (piece)
+  switch (which)
   {
-    case BQ: board[promotionSquare/8][promotionSquare%8] = player? BQ:WQ;
-    case BR: board[promotionSquare/8][promotionSquare%8] = player? BR:WR;
-    case BN: board[promotionSquare/8][promotionSquare%8] = player? BN:WN;
-    case BB: board[promotionSquare/8][promotionSquare%8] = player? BB:WB;
+    case 0: board[promotionSquare/8][promotionSquare%8] = player? BQ:WQ; break;
+    case 1: board[promotionSquare/8][promotionSquare%8] = player? BR:WR; break;
+    case 2: board[promotionSquare/8][promotionSquare%8] = player? BB:WB; break;
+    case 3: board[promotionSquare/8][promotionSquare%8] = player? BN:WN; break;
     default: return;
   }
   promotionSquare = -1;
