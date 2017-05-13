@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
 
   //players[0] = new RandomPlayer(&b);
   //players[1] = new RandomPlayer(&b);
-  players[0] = new HumanPlayer(&bgui, &b);
+  //players[0] = new HumanPlayer(&bgui, &b);
   players[1] = new HumanPlayer(&bgui, &b);
-  //players[0] = new AIPlayer(&b, &bgui, 5);
+  players[0] = new AIPlayer(&b, &bgui, 6);
   //players[1] = new AIPlayer(&b, &bgui, 5);
 
   bgui.draw(renderer);
@@ -89,14 +89,13 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
   int numUndo[2] = {1, 1};
   int curPlayer, input;
   while (b->getNumMoves() != 0) { // continue as long as the game haven't ended
-    // get player's move
     curPlayer = b->getPlayer();
-    input = players[curPlayer]->decideMove();
+    input = players[ curPlayer ]->decideMove();
 
     // make the move
     if (players[curPlayer]->isHuman()) {
     // if player is human, the value returned is a chosen square. Choose the appropriate square.
-      if (input == 0) {
+      if (input == 0) { // user haven't selected move
       } else if (input >= BoardGUI::INPUT_MIN_SQUARE && input <= BoardGUI::INPUT_MAX_SQUARE) { //olayer chose a square in board
         // if there is a promotion event, cannot make move until player choose a promotion
         if (b->hasPromotion()) {
