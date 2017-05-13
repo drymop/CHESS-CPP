@@ -500,6 +500,7 @@ void Board::makeMove(int square1,int square2)
   {
     if (moveList[i] == square1 && moveList[i+1] == square2)
     {
+      printf("Board make move %i\n", i/3);
       moveType = moveList[i+2];
       break;
     }
@@ -1065,7 +1066,8 @@ void Board::updatePawnMoves(int r, int c)
   // Two squares ahead
   i += moveForward;
    //if in the correct row and the 1st square ahead is empty, and the 2nd square ahead is empty, can jump 2 squares ahead
-  if (canDoubleJump && board[i][j] == -1)
+  if (canDoubleJump && board[i][j] == -1
+      && ((checkingSquare == -1) || isInRay(checkingSquare/8, checkingSquare%8, i, j, kingSquares[player]/8, kingSquares[player]%8)))
   {
     moveList.push_back(pawnSquare);
     moveList.push_back(i * 8 + j);
