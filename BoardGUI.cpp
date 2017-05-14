@@ -1,13 +1,15 @@
 #include "BoardGUI.h"
 
+#include <stdio.h>
 
-BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
-{
+
+BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
   this->b = brd;
 
-  /*
-   * Set an array of buttons (or boxes) so that GUI return clicks on these buttons
-   */
+  ////////////////////////////////////////////////////////////////////////////
+  //    Set an array of boxes so that GUI return clicks on these boxes
+  ////////////////////////////////////////////////////////////////////////////
+
   Box* boxArr = new Box[70];
   // buttons for 64 squares of chess board
   for(int i = INPUT_MIN_SQUARE - 1; i < INPUT_MAX_SQUARE; i++) {
@@ -26,9 +28,9 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
   // pass the array to GUI
   setBoxes(boxArr, 70);
 
-  /*
-   * Init textures and coordinates
-   */
+  /////////////////////////////////////////////////////////////////////////////
+  //                     Init images and coordinates
+  /////////////////////////////////////////////////////////////////////////////
   boardImg.loadFromFile(renderer, "img/boardGUI/board.jpg");
   piecesSprite.loadFromFile(renderer, "img/boardGUI/pieces.png");
   piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND); // piece can be made transparent
@@ -74,44 +76,49 @@ void BoardGUI::updateMovePointers() {
   }
 }
 
+void BoardGUI::setPlayer(int color) {
+  humanSide = color;
+}
+
 void BoardGUI::draw(SDL_Renderer* renderer) {
   // Clear screen
   SDL_RenderClear( renderer );
 
   // Draw chessboard
   boardImg.render(renderer, 0, 0);
+
   // Draw click boxes
   //SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0x00 );
   //SDL_RenderDrawRects(renderer, boardSquares, 64);
 
   // Draw all chess pieces from board
-  for (int i = 0; i < 64; i++)
-  {
+  for (int i = 0; i < Board::NUM_SQUARES; i++) {
     int piece = b->getPieceGUI(i);
-    if (piece >= 0 && piece < 12)
-    {
+    if (piece == Board::EMPTY) continue;
+    if (piece < Board::NUM_COLORED_TYPES) {
       // if piece is not chosen, draw as normal
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
-    }
-    else if (piece >= 12)
-    {
+    } else {
       // if piece is chosen, draw it half transparent
+      piece -= Board::NUM_COLORED_TYPES;
       piecesSprite.setTransparency(ALPHA_FADED);
-      piecesSprite.render(renderer, &pieceClips[piece-12], &boardSquares[i]);
+      piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
       piecesSprite.setTransparency(ALPHA_NORMAL);
     }
   }
 
-  /*
-   * Side Bar
-   */
+  // Draw side Bar
   undoButton.render(renderer, NULL, &undoRect);
   homeButton.render(renderer, NULL, &homeRect);
-  playerTxt.render(renderer, NULL, &playerTxtRect);
+  if (humanSide == Board::BOTH_COLOR || humanSide == b->getPlayer()) {
+    playerTxt.render(renderer, NULL, &playerTxtRect);
+  } else {
+    comTxt.render(renderer, NULL, &playerTxtRect);
+  }
   colorSymbols[b->getPlayer()].render(renderer, NULL, &colorSymbolRect);
 
-  for (int i = 0; i < availableMoves.size(); i++)
-  {
+  // Draw move pointers
+  for (int i = 0; i < availableMoves.size(); i++) {
     int arrowX = boardSquares[availableMoves[i]].x;
     int arrowY = boardSquares[availableMoves[i]].y;
     arrowY -= arrowHeight;
@@ -120,8 +127,8 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
   arrowHeight += arrowSpeed;
   if (arrowHeight > ARROW_HIGH || arrowHeight < ARROW_LOW) arrowSpeed = -arrowSpeed;
 
-  if (b->hasPromotion())
-  {
+  // Draw promotion panel
+  if (b->hasPromotion()) {
     // Draw promotion options
     promoteTxt.render(renderer, NULL, &promoteTxtRect);
     int color = b->getPlayer()? 0 : 6;

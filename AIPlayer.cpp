@@ -21,7 +21,7 @@ bool AIPlayer::isBoardDifferent() {
 }
 
 int AIPlayer::decideMove() {
-   saveBoard(); // uncomment if want to find bugs in board or AI
+  //saveBoard(); // uncomment if want to find bugs in board or AI
   // numNodes = 0; // uncomment to check pruning's effect (see how many nodes the AI evaluates)
 
   int color = b->getPlayer()? -1 : 1;
@@ -53,10 +53,10 @@ int AIPlayer::decideMove() {
     if (GUI::quit || bgui->getInput() == BoardGUI::INPUT_HOME) break;
   }
   // uncomment to check for board or AI bugs.
-  if (isBoardDifferent()) {
-    GUI::quit = true;
-    return -1;
-  }
+  //if (isBoardDifferent()) {
+    //GUI::quit = true;
+    //return -1;
+  //}
   return bestMove;
 }
 
@@ -266,12 +266,12 @@ int AIPlayer::heuristicEval() {
   }
   if (material > END_GAME_MATERIAL) { // early game
     int kingSq = b->getKingSquare(Board::WHITE); //white king
-    score += positionValues[Board::BK][56 + 2* (kingSq % Board::COLS) - kingSq];
+    score += positionValues[Board::BK][56 + 2*(kingSq % Board::COLS) - kingSq];
     kingSq = b->getKingSquare(Board::BLACK); //black king
     score -= positionValues[Board::BK][kingSq];
   } else { // late game
     int kingSq = b->getKingSquare(Board::WHITE);
-    score += positionValues[6][56 + 2* (kingSq % Board::COLS) - kingSq];
+    score += positionValues[6][56 + 2*(kingSq % Board::COLS) - kingSq];
     kingSq = b->getKingSquare(Board::BLACK);
     score -= positionValues[6][kingSq];
   }

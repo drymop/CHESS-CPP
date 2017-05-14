@@ -1,28 +1,23 @@
+/***********************************************************************//**
+ * Abstract class declare an array of "box" (or click zones).
+ * Each box has a distinct value.
+ * Has method to get user's click and return the value of the box clicked
+ * Derive this class to make different guis
+ ***************************************************************************/
+
 #ifndef GUI_H
 #define GUI_H
 
 #include <SDL.h>
 
-
-/**
- * Abstract class contains an array of "box" (or click zones), each box has a distinct value
- * Has function getMove() to return the value of box clicked
- * Derive this class to make different guis
- */
-
 class GUI
 {
   protected:
-    /*
-     * A box is a rectangular region in which every points have the same value
+    /**
+     * A box is a rectangular region with a value
      * A click in a box return the specific value of that box
      */
     class Box {
-      /*
-       * The bounds and value of the box:
-       * (x1, y1) is the coordinate of the upper left conner
-       * (x2, y2) is the coordinate of the lower right conner
-       */
       public:
         int x1, y1, x2, y2;
         int boxValue;
@@ -40,17 +35,16 @@ class GUI
          * @param x, y coordinates of the given point
          */
         bool contains(int x, int y);
-
-        void printBox();
     };
   public:
     GUI();
     ~GUI();
 
-    /*
+    /**
      * Quit flag
      */
     static bool quit;
+
     /**
      * Set the box array of GUI
      * @param boxes[] an array of boxes to be used
@@ -69,10 +63,10 @@ class GUI
      * Draw the GUI on the screen
      */
     virtual void draw(SDL_Renderer* renderer) = 0;
-    void printAllBox();
+
   private:
-    Box* boxes;
-    int numBox;
+    Box* boxes; /**< The array of boxes to get input from */
+    int numBox; /**< The number of boxes */
 };
 
 #endif // GUI_H

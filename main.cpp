@@ -65,18 +65,6 @@ int main(int argc, char* argv[]) {
 
   Player** players = new Player*[2];
 
-  //test
-  /*Player* pp = new AIPlayer(&b, &bgui, 3);
-  int a;
-  b.initBoard();
-  for (int i = 0; i < 20; i++)
-  {
-    b.makeMove(i);
-    b.undoMove();
-  }
-  delete pp;*/
-
-
 
   int input;
   while (true) {
@@ -92,7 +80,8 @@ int main(int argc, char* argv[]) {
     } else if (input == StartGUI::INPUT_MULTI_PLAYER) { // Human vs Human
       players[0] = new HumanPlayer(&bgui, &b);
       players[1] = new HumanPlayer(&bgui, &b);
-      egui.setPlayer(2);
+      bgui.setPlayer(Board::BOTH_COLOR);
+      egui.setPlayer(Board::BOTH_COLOR);
     } else {
       cgui.openingAnimation(renderer);
       cgui.draw(renderer);
@@ -105,15 +94,16 @@ int main(int argc, char* argv[]) {
       if (GUI::quit) break;
 
       switch (input) {
-        case ChooseComGUI::INPUT_WHITE_EASY  : comPlayer = 0; difficulty = 2; break;
-        case ChooseComGUI::INPUT_WHITE_MEDIUM: comPlayer = 0; difficulty = 4; break;
-        case ChooseComGUI::INPUT_WHITE_HARD  : comPlayer = 0; difficulty = 6; break;
-        case ChooseComGUI::INPUT_BLACK_EASY  : comPlayer = 1; difficulty = 2; break;
-        case ChooseComGUI::INPUT_BLACK_MEDIUM: comPlayer = 1; difficulty = 4; break;
-        case ChooseComGUI::INPUT_BLACK_HARD  : comPlayer = 1; difficulty = 6; break;
+        case ChooseComGUI::INPUT_WHITE_EASY  : comPlayer = Board::WHITE; difficulty = 2; break;
+        case ChooseComGUI::INPUT_WHITE_MEDIUM: comPlayer = Board::WHITE; difficulty = 4; break;
+        case ChooseComGUI::INPUT_WHITE_HARD  : comPlayer = Board::WHITE; difficulty = 6; break;
+        case ChooseComGUI::INPUT_BLACK_EASY  : comPlayer = Board::BLACK; difficulty = 2; break;
+        case ChooseComGUI::INPUT_BLACK_MEDIUM: comPlayer = Board::BLACK; difficulty = 4; break;
+        case ChooseComGUI::INPUT_BLACK_HARD  : comPlayer = Board::BLACK; difficulty = 6; break;
       }
       players[comPlayer] = new AIPlayer(&b, &bgui, difficulty);
       players[1-comPlayer] = new HumanPlayer(&bgui, &b);
+      bgui.setPlayer(1-comPlayer);
       egui.setPlayer(1-comPlayer);
       cgui.endingAnimation(renderer);
     }
@@ -139,8 +129,8 @@ int main(int argc, char* argv[]) {
     do {
       input = egui.getInput();
     } while (input == 0);
-    printf("end gui input is %i\n", input);
   }
+
   delete[] players;
 
   quitGraphic(window, renderer);

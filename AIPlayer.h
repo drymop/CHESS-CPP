@@ -16,7 +16,7 @@ class AIPlayer : public Player {
     /**
      * @param brd: the board to consider.
      * @param brdgui: the board GUI used to display the board.
-     * @param difficulty: the number of half-move the AI can look ahead.
+     * @param difficulty: the number of moves (half-turn) the AI can look ahead.
      */
     AIPlayer(Board* brd, BoardGUI* brdgui, int difficulty);
     ~AIPlayer() {}
