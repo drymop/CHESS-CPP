@@ -102,6 +102,10 @@ std::vector<int> Board::getHistory() {
   return history;
 }
 
+int Board::getGameLength() {
+  return history.size() / MOVE_LENGTH_HISTORY;
+}
+
 int Board::getChosenSquare() {
   return chosenSquare;
 }
@@ -732,7 +736,6 @@ void Board::updatePawnMoves(int r, int c) {
   bool canEnPassant = (r == (player? 3 : 4))
                       && (history.size() != 0) && (history[history.size()-1] == MOVE_PAWN_DOUBLE_JUMP); // is in the correct row for en passant, and the last move is a double jump
 
-
   //
   // Move straight
   //
@@ -785,8 +788,9 @@ void Board::updatePawnMoves(int r, int c) {
   i = r + moveForward;
   // check through the left and right column
   for (j = c - 1; j <= c+1; j += 2) {
-    if (j >= 0 && j < COLS  //not outside board
-        && ((checkingSquare == -1) || isInRay(checkingSquare, i * COLS + j, kingSquares[player]))) {//no king danger if moves
+    if (j < 0 || j >= COLS) continue; //out of bound
+
+    if ((checkingSquare == -1) || isInRay(checkingSquare, i * COLS + j, kingSquares[player])) {//no king danger if moves
       if (canEnPassant && (j == history[history.size()-3] % COLS)) {// if in the correct row and correct col, can en passant
         moveList.push_back(pawnSquare);
         moveList.push_back(i * COLS + j);
@@ -812,6 +816,18 @@ void Board::updatePawnMoves(int r, int c) {
           moveList.push_back(i * COLS + j);
           moveList.push_back(MOVE_NORMAL);
         }
+      }
+    } else { //king danger if move
+      // if a double jumped pawn is checking king,
+      // en passant although doesn't go between the checking pawn and the king
+      // can still remove the checking pawn and thus remove the check
+
+      if (canEnPassant //last move is a double jump, and this pawn is in the correct row for en passant
+          && (history[history.size() - 3] == checkingSquare) //the double jumped pawn is the checking piece
+          && (j == history[history.size()-3] % COLS)) { // this pawn is in the correct col
+        moveList.push_back(pawnSquare);
+        moveList.push_back(i * COLS + j);
+        moveList.push_back(MOVE_PAWN_EN_PASSANT);
       }
     }
   }

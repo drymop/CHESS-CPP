@@ -123,6 +123,11 @@ public:
   std::vector<int> getHistory();
 
   /**
+   * Get the number of moves (or half-turn) made since game start
+   */
+  int getGameLength();
+
+  /**
    * Return the winner of the game.
    * Should only be called after the game has ended.
    * @return WHITE, BLACK, BOTH_COLOR (for draw), or -1 if game hasn't ended.
