@@ -1,8 +1,8 @@
-/**
+/******************************************************//**
  * Chess Game
  * @author lmtuan
- * @version 0.9
- */
+ * @version 2.1
+ **********************************************************/
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -47,6 +47,7 @@ void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer);
 
 
+
 int main(int argc, char* argv[]) {
   SDL_Window* window;
   SDL_Renderer* renderer;
@@ -58,18 +59,28 @@ int main(int argc, char* argv[]) {
 
   GUI::quit = false;
   StartGUI sgui(renderer);
-
   ChooseComGUI cgui(renderer);
-
   BoardGUI bgui(&b, renderer);
-
   EndGUI egui(renderer);
+
   Player** players = new Player*[2];
+
+  //test
+  /*Player* pp = new AIPlayer(&b, &bgui, 3);
+  int a;
+  b.initBoard();
+  for (int i = 0; i < 20; i++)
+  {
+    b.makeMove(i);
+    b.undoMove();
+  }
+  delete pp;*/
+
+
 
   int input;
   while (true) {
-    b.initBoard();
-
+    b.initBoard(); //new board every game
     sgui.draw(renderer);
     do {
       input = sgui.getInput();
@@ -137,8 +148,9 @@ int main(int argc, char* argv[]) {
 }
 
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer) {
-  int numUndo[2] = {1, 1};
+  int numUndo[2] = {-1, -1};
   int curPlayer, input;
+  bgui->draw(renderer);
   while (b->getNumMoves() != 0) { // continue as long as the game haven't ended
     curPlayer = b->getPlayer();
     input = players[ curPlayer ]->decideMove();
@@ -155,7 +167,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
           b->chooseSquare(input - 1);
         }
       } else {//player chose a button from side bar
-        int promoteTo;
+        int promoteType;
         switch (input) {
           case BoardGUI::INPUT_UNDO: // undo
             if (numUndo[curPlayer] != 0) {
@@ -165,13 +177,13 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
             }
             break;
           case BoardGUI::INPUT_HOME: return -1; // return home
-          case BoardGUI::INPUT_PROMOTE_QUEEN: promoteTo = 0; break; //promote to queen
-          case BoardGUI::INPUT_PROMOTE_ROOK: promoteTo = 1; break; //promote to rook
-          case BoardGUI::INPUT_PROMOTE_BISHOP: promoteTo = 2; break; //promote to bishop
-          case BoardGUI::INPUT_PROMOTE_KNIGHT: promoteTo = 3; break; //promote to knight
+          case BoardGUI::INPUT_PROMOTE_QUEEN:  promoteType = Board::MOVE_PROMOTION_QUEEN; break;
+          case BoardGUI::INPUT_PROMOTE_ROOK:   promoteType = Board::MOVE_PROMOTION_ROOK; break;
+          case BoardGUI::INPUT_PROMOTE_BISHOP: promoteType = Board::MOVE_PROMOTION_BISHOP; break;
+          case BoardGUI::INPUT_PROMOTE_KNIGHT: promoteType = Board::MOVE_PROMOTION_KNIGHT; break;
         }
         if (b->hasPromotion()) {
-          b->promote(promoteTo);
+          b->promote(promoteType);
         }
       }
       bgui->updateMovePointers();

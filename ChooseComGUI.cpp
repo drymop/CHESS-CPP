@@ -19,6 +19,7 @@ ChooseComGUI::ChooseComGUI(SDL_Renderer* renderer){
 }
 
 void ChooseComGUI::draw(SDL_Renderer* renderer) {
+  SDL_RenderClear(renderer);
   bothSide.render(renderer);
   SDL_RenderPresent(renderer);
 }

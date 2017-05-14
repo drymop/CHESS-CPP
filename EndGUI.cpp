@@ -64,4 +64,3 @@ void EndGUI::draw(SDL_Renderer* renderer)
   }
   SDL_RenderPresent(renderer);
 }
-

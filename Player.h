@@ -1,3 +1,8 @@
+/***********************************************************************//**
+ * Interface for all player classes.
+ ***************************************************************************/
+
+
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -6,20 +11,17 @@ class Player
 {
 public:
   Player();
-  ~Player();
+  virtual ~Player();
 
   /**
-   * Human makes move through several stage (choose first square, choose second square, choose promotion (if applicable).
-   * So human player need to be distinguished from computer player.
-   * @return true if is human
+   * @return true if player is human, false if player is COM.
    */
   virtual bool isHuman() = 0;
 
   /**
-   * Decide which move to go
-   * Must return almost immediately if user quits
-   * @return the move number (according to moveList vector of current board).
-   * In case of human player, return the square clicked.
+   * Decide which move to make.
+   * @return If the player is human, return input from GUI.
+   * @return If the player is COM, return the move number among all available moves.
    */
   virtual int decideMove() = 0;
 };

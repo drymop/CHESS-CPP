@@ -1,11 +1,9 @@
 #include "Player.h"
 
-Player::Player()
-{
+Player::Player() {
   // empty constructor
 }
 
-Player::~Player()
-{
+Player::~Player() {
   // empty destructor
 }

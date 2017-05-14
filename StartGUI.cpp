@@ -55,4 +55,3 @@ void StartGUI::openAnimation(SDL_Renderer* renderer)
     }
   }
 }
-

@@ -1,7 +1,4 @@
 #include "BoardGUI.h"
-#include <PieceType.h>
-
-#include <stdio.h>
 
 
 BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
@@ -69,16 +66,16 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
   promotePieceRects[3] = {617, 528, 50, 50};
 }
 
-void BoardGUI::updateMovePointers()
-{
+void BoardGUI::updateMovePointers() {
   availableMoves.clear();
-  b->getMovesFromSquare(availableMoves);
+  int chosenSquare = b->getChosenSquare();
+  if (chosenSquare >= 0 && chosenSquare < Board::NUM_SQUARES) {
+    b->getMovesFromSquare(availableMoves, chosenSquare);
+  }
 }
 
-void BoardGUI::draw(SDL_Renderer* renderer)
-{
-
-  // Clear screen with white color
+void BoardGUI::draw(SDL_Renderer* renderer) {
+  // Clear screen
   SDL_RenderClear( renderer );
 
   // Draw chessboard
@@ -128,10 +125,10 @@ void BoardGUI::draw(SDL_Renderer* renderer)
     // Draw promotion options
     promoteTxt.render(renderer, NULL, &promoteTxtRect);
     int color = b->getPlayer()? 0 : 6;
-    piecesSprite.render(renderer, &pieceClips[BQ + color], &promotePieceRects[0]);
-    piecesSprite.render(renderer, &pieceClips[BR + color], &promotePieceRects[1]);
-    piecesSprite.render(renderer, &pieceClips[BB + color], &promotePieceRects[2]);
-    piecesSprite.render(renderer, &pieceClips[BN + color], &promotePieceRects[3]);
+    piecesSprite.render(renderer, &pieceClips[Board::BQ + color], &promotePieceRects[0]);
+    piecesSprite.render(renderer, &pieceClips[Board::BR + color], &promotePieceRects[1]);
+    piecesSprite.render(renderer, &pieceClips[Board::BB + color], &promotePieceRects[2]);
+    piecesSprite.render(renderer, &pieceClips[Board::BN + color], &promotePieceRects[3]);
   }
 
 
