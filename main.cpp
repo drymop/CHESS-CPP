@@ -1,6 +1,6 @@
 /******************************************************//**
  * Chess Game
- * @author lmtuan
+ * @author Viet
  * @version 2.1
  **********************************************************/
 
@@ -20,12 +20,12 @@
 #include "StartGUI.h"
 
 
-/************************************
- * Sizes and title of the game window
- ************************************/
+/*******************************************************************
+ *                 SDL Management
+ *******************************************************************/
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
-const char* WINDOW_TITLE = "Chess Game by lmtuan";
+const char* WINDOW_TITLE = "Viet Chess";
 
 /**
  * Initialize window and renderer
@@ -40,9 +40,15 @@ bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer);
  */
 void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 
+
+/*******************************************************************
+ *                            Main game
+ *******************************************************************/
+
 /**
  * Play a chess game, and return the winner
- * @return 0 for white, 1 for black, 2 for draw, and -1 for premature quit (back to start screen or quit game)
+ * @return Board::WHITE for white, Board::BLACK for black, Board::BOTH_COLOR for tie,
+ * and -1 for premature quit (back to start screen or quit game)
  */
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer);
 
@@ -108,11 +114,10 @@ int main(int argc, char* argv[]) {
       cgui.endingAnimation(renderer);
     }
 
-    /*
-     * Play the game
-     */
+    ////////////////////////////////////////////////////////////////
+    //                         Play the game
+    ////////////////////////////////////////////////////////////////
     int winner = playGame(&b, players, &bgui, renderer);
-    SDL_Delay(5000);
     delete players[0]; players[0] = NULL;
     delete players[1]; players[1] = NULL;
     /*
@@ -150,8 +155,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
     if (players[curPlayer]->isHuman()) {
     // if player is human, the value returned is a chosen square. Choose the appropriate square.
       if (input == 0) { // user haven't selected move
-      } else if (GUI::quit) { //user quit
-        return -1;
+        if (GUI::quit) return -1;
       } else if (input >= BoardGUI::INPUT_MIN_SQUARE && input <= BoardGUI::INPUT_MAX_SQUARE) { //olayer chose a square in board
         // if there is a promotion event, cannot make move until player choose a promotion
         if (b->hasPromotion()) {
@@ -189,8 +193,13 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
     // draw board
     bgui->draw(renderer);
   }
+  SDL_Delay(3000);
   return (b->getWinner());
 }
+
+/*******************************************************************
+ *                       Implementation
+ *******************************************************************/
 
 bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer) {
   // Init SDL
