@@ -28,7 +28,6 @@ class GUI
          * @param x1, y1, x2, y2 bounds of the box
          * @param value the value of the box. Value of 0 will causes undefined behavior.
          */
-        Box() {};
         Box(int x1, int y1, int x2, int y2, int value);
 
         /**

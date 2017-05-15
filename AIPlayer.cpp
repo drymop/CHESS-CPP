@@ -50,7 +50,7 @@ int AIPlayer::decideMove() {
       if (alpha >= beta) break;
     }
     // handle GUI events: if user quit, immediately
-    if (GUI::quit || bgui->getInput() == BoardGUI::INPUT_HOME) break;
+    if (bgui->getInput() == BoardGUI::INPUT_HOME || GUI::quit) return -1;
   }
   // uncomment to check for board or AI bugs.
   //if (isBoardDifferent()) {
@@ -141,11 +141,11 @@ void AIPlayer::reorderMoves(int *moveOrder, int numMoves, int color) {
 }
 
 const int AIPlayer::pieceValues[6] = {900, 0, 500, 320, 330, 100};
+
 const int AIPlayer::MATE_VALUE = 9 * pieceValues[Board::BQ]
                                + 2 * pieceValues[Board::BR]
                                + 2 * pieceValues[Board::BK]
-                               + 2 * pieceValues[Board::BB]
-                               + 8 * pieceValues[Board::BP];
+                               + 2 * pieceValues[Board::BB];
 const int AIPlayer::positionValues[7][64] = {
   { // queen
 		-20,-10,-10, -5, -5,-10,-10,-20,
@@ -207,7 +207,7 @@ const int AIPlayer::positionValues[7][64] = {
      5, 10, 10,-20,-20, 10, 10,  5,
      0,  0,  0,  0,  0,  0,  0,  0
 	},
-	{ //king end game
+	{ //king late game
 		-50,-40,-30,-20,-20,-30,-40,-50,
     -30,-20,-10,  0,  0,-10,-20,-30,
     -30,-10, 20, 30, 30, 20,-10,-30,
@@ -218,7 +218,7 @@ const int AIPlayer::positionValues[7][64] = {
     -50,-30,-30,-30,-30,-30,-30,-50,
 	}
 };
-const int AIPlayer::END_GAME_MATERIAL = 3500;
+const int AIPlayer::LATE_GAME_MATERIAL = 3500;
 
 int AIPlayer::heuristicEval() {
   //////////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ int AIPlayer::heuristicEval() {
       piece -= Board::MIN_WHITE_TYPE; //get the type of piece without color
       score += pieceValues[piece];
       material += pieceValues[piece];
-      score += positionValues[piece][56 + 2* (s % Board::COLS) - s]; //flips positionValues
+      score += positionValues[piece][63 - s]; //flips positionValues
     }
     else { // square has black piece
       if (piece == Board::BK) continue;
@@ -264,7 +264,7 @@ int AIPlayer::heuristicEval() {
       score -= positionValues[piece][s];
     }
   }
-  if (material > END_GAME_MATERIAL) { // early game
+  if (material > LATE_GAME_MATERIAL) { // early game
     int kingSq = b->getKingSquare(Board::WHITE); //white king
     score += positionValues[Board::BK][56 + 2*(kingSq % Board::COLS) - kingSq];
     kingSq = b->getKingSquare(Board::BLACK); //black king

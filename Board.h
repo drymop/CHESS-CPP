@@ -57,8 +57,7 @@ public:
   static const int MOVE_LENGTH_MOVE_LIST = 3; /**< The length of each move in move list */
   static const int MOVE_LENGTH_HISTORY = 4; /**< The length of each move in history */
 
-  enum MoveTypes
-  {
+  enum MoveTypes {
     MOVE_NORMAL,
     MOVE_CASTLING,
     MOVE_PAWN_DOUBLE_JUMP,
@@ -177,7 +176,7 @@ public:
 
   /**
    * Choose which piece to promote to
-   * @param piece: the type of promotion (according to move types enum)
+   * @param piece: the type of promotion (according to Move types enum)
    */
   void promote(int promotionType);
 
@@ -211,7 +210,6 @@ public:
    * @param moveNum: the number of half-turn.
    */
   void printHistory(int moveNum);
-
 
 
 private:
@@ -269,7 +267,7 @@ private:
   int promotionSquare;
 
   /***************************************************************************
-   *                        Legal move generation
+   *                         Legal move generation
    ***************************************************************************/
 
   /**

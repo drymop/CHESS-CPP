@@ -112,6 +112,7 @@ int main(int argc, char* argv[]) {
      * Play the game
      */
     int winner = playGame(&b, players, &bgui, renderer);
+    SDL_Delay(5000);
     delete players[0]; players[0] = NULL;
     delete players[1]; players[1] = NULL;
     /*
@@ -149,6 +150,8 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
     if (players[curPlayer]->isHuman()) {
     // if player is human, the value returned is a chosen square. Choose the appropriate square.
       if (input == 0) { // user haven't selected move
+      } else if (GUI::quit) { //user quit
+        return -1;
       } else if (input >= BoardGUI::INPUT_MIN_SQUARE && input <= BoardGUI::INPUT_MAX_SQUARE) { //olayer chose a square in board
         // if there is a promotion event, cannot make move until player choose a promotion
         if (b->hasPromotion()) {
@@ -179,17 +182,13 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
       bgui->updateMovePointers();
     } else {
     //if is AI, the value returned is a move number. Make the move, and process input queue to catch quitting event.
+      if (input == -1) return -1; // AI returns -1 when user quit during AI thinking
       b->makeMove(input);
-      bgui->getInput(); //process all input made during ai's thinking
     }
-
-    // if quit or user chooses to return to start screen
-    if (GUI::quit || input == BoardGUI::INPUT_HOME) return -1;
 
     // draw board
     bgui->draw(renderer);
   }
-  printf("Player %i wins!", b->getWinner()+1);
   return (b->getWinner());
 }
 

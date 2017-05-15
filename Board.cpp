@@ -133,7 +133,7 @@ void Board::makeMove(int moveIndex) {
   if (promotionSquare != -1) return;
 
   //Each move use 3 indexes, so the nth move is at index 3n.
-  moveIndex = moveIndex * MOVE_LENGTH_MOVE_LIST;
+  moveIndex *= MOVE_LENGTH_MOVE_LIST;
   int x1 = moveList[moveIndex] / COLS;
   int y1 = moveList[moveIndex] % COLS;
   int x2 = moveList[moveIndex + 1] / COLS;
@@ -157,13 +157,10 @@ void Board::makeMove(int moveIndex) {
       board[x1][y2] = EMPTY;
       break;
     case MOVE_CASTLING:
-      if (y2 == 2) //left castling
-      {
+      if (y2 == 2) {//left castling
         board[x2][3] = board[x2][0];
         board[x2][0] = -1;
-      }
-      else //right castling
-      {
+      } else {//right castling
         board[x2][5] = board[x2][7];
         board[x2][7] = -1;
       }
@@ -221,8 +218,7 @@ void Board::makeMove(int moveIndex) {
 void Board::chooseSquare(int square) {
   if (square == chosenSquare) { //if choose the same square, unchoose the square
     chosenSquare = -1;
-  }
-  else {
+  } else {
     if(chosenSquare == -1) { //currently no square is selected
       int chosenPiece = board[square/COLS][square%COLS];
       //if the piece chosen is player's piece, choose the given square
@@ -379,8 +375,7 @@ void Board::undoMove() {
       if (y2 == 2) { //left castling
         board[x2][0] = board[x2][3];
         board[x2][3] = EMPTY;
-      }
-      else { //right castling
+      } else { //right castling
         board[x2][7] = board[x2][5];
         board[x2][5] = EMPTY;
       }

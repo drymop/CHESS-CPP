@@ -55,7 +55,7 @@ class AIPlayer : public Player {
     /**
      * AI switches to end game strategy when the total material is smaller than this value
      */
-    static const int END_GAME_MATERIAL;
+    static const int LATE_GAME_MATERIAL;
 
     /***************************************************************************
      * Search and Evaluation methods
