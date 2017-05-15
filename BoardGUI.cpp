@@ -7,26 +7,25 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
   this->b = brd;
 
   ////////////////////////////////////////////////////////////////////////////
-  //    Set an array of boxes so that GUI return clicks on these boxes
+  //   Set an array of boxes so that GUI can return clicks on these boxes
   ////////////////////////////////////////////////////////////////////////////
 
-  Box* boxArr = new Box[70];
   // buttons for 64 squares of chess board
   for(int i = INPUT_MIN_SQUARE - 1; i < INPUT_MAX_SQUARE; i++) {
     // coordinate of the top left corner of the square
     int x = 48 + (i%8) * 507 / 8;
     int y = 50 + (7- i/8) * 507 / 8;
-    boxArr[i] = {x, y , x+60, y+60, i+1};
+    boxes.push_back( Box(x, y , x+60, y+60, i+1) );
   }
   // buttons on the side bar
-  boxArr[64] = {626, 18, 682, 87, INPUT_UNDO};//undo button
-  boxArr[65] = {721, 18, 782, 87, INPUT_HOME};//home button
-  boxArr[66] = {611, 342, 790, 392, INPUT_PROMOTE_QUEEN};//queen promote
-  boxArr[67] = {611, 403, 790, 453, INPUT_PROMOTE_ROOK};//rook promote
-  boxArr[68] = {611, 465, 790, 515, INPUT_PROMOTE_BISHOP};//bishop promote
-  boxArr[69] = {611, 528, 790, 578, INPUT_PROMOTE_KNIGHT};//knight promote
+  boxes.push_back( Box(626, 18, 682, 87, INPUT_UNDO) );//undo button
+  boxes.push_back( Box(721, 18, 782, 87, INPUT_HOME) );//home button
+  boxes.push_back( Box(611, 342, 790, 392, INPUT_PROMOTE_QUEEN) );//queen promote
+  boxes.push_back( Box(611, 403, 790, 453, INPUT_PROMOTE_ROOK) );//rook promote
+  boxes.push_back( Box(611, 465, 790, 515, INPUT_PROMOTE_BISHOP) );//bishop promote
+  boxes.push_back( Box(611, 528, 790, 578, INPUT_PROMOTE_KNIGHT) );//knight promote
   // pass the array to GUI
-  setBoxes(boxArr, 70);
+  //setBoxes(boxArr, 70);
 
   /////////////////////////////////////////////////////////////////////////////
   //                     Init images and coordinates

@@ -9,14 +9,15 @@
 #define GUI_H
 
 #include <SDL.h>
+#include <vector>
 
 class GUI
 {
   protected:
-    /**
-     * A box is a rectangular region with a value
-     * A click in a box return the specific value of that box
-     */
+    /**********************************************************//**
+     * A rectangular region with a specific value assigned to it.
+     * Used to create buttons in GUI.
+     **************************************************************/
     class Box {
       public:
         int x1, y1, x2, y2;
@@ -36,6 +37,9 @@ class GUI
          */
         bool contains(int x, int y);
     };
+
+    std::vector<Box> boxes; /**< The array of boxes to get input from */
+
   public:
     GUI();
     ~GUI();
@@ -46,14 +50,8 @@ class GUI
     static bool quit;
 
     /**
-     * Set the box array of GUI
-     * @param boxes[] an array of boxes to be used
-     * @param size the size of the array
-     */
-    void setBoxes(Box* box, int size);
-
-    /**
-     * Get user's click
+     * Get user's click.
+     * If user quits, set GUI::quit to true.
      * @return value of the clicked box
      *         0 if there's no click or if user quits
      */
@@ -63,10 +61,6 @@ class GUI
      * Draw the GUI on the screen
      */
     virtual void draw(SDL_Renderer* renderer) = 0;
-
-  private:
-    Box* boxes; /**< The array of boxes to get input from */
-    int numBox; /**< The number of boxes */
 };
 
 #endif // GUI_H

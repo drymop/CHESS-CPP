@@ -6,9 +6,7 @@ GUI::GUI() {
 }
 
 GUI::~GUI() {
-  //Deallocate memory of box array
-  delete[] boxes;
-  boxes = NULL;
+  //empty destructor
 }
 
 bool GUI::quit = false;
@@ -21,13 +19,9 @@ GUI::Box::Box(int x1, int y1, int x2, int y2, int value) {
   this->boxValue = value;
 }
 
+
 bool GUI::Box::contains(int x, int y) {
   return ((x > x1) && (x < x2) && (y > y1) && (y < y2));
-}
-
-void GUI::setBoxes(Box* box, int size) {
-  this->boxes = box;
-  this->numBox = size;
 }
 
 int GUI::getInput() {
@@ -43,6 +37,7 @@ int GUI::getInput() {
       int mouseY = e.button.y;
 
       //Get clicked box's value
+      int numBox = boxes.size();
       for(int i = 0; i < numBox; i++) {
         if(boxes[i].contains(mouseX, mouseY)) {
           boxClicked = boxes[i].boxValue;

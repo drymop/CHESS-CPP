@@ -19,8 +19,8 @@ class BoardGUI : public GUI {
      * All input values returned by this gui's getInput method
      ***************************************************************************/
 
-    static const int INPUT_MIN_SQUARE = 1; /**< The smallest value of a board square input, corresponds to square a1. */
-    static const int INPUT_MAX_SQUARE = 64; /**< The smallest value of a board square input, corresponds to square h8. */
+    static const int INPUT_MIN_SQUARE = 1; /**< The smallest value of a chess square input, corresponds to square a1. */
+    static const int INPUT_MAX_SQUARE = 64; /**< The smallest value of a chess square input, corresponds to square h8. */
     static const int INPUT_UNDO = -1; /**< User chooses undo */
     static const int INPUT_HOME = -2; /**< User chooses to return to the start screen */
     static const int INPUT_PROMOTE_QUEEN = -3; /**< User promotes pawn to queen */
@@ -53,13 +53,13 @@ class BoardGUI : public GUI {
     void setPlayer(int color);
 
     /**
-     * Called when user chooses a new square.
+     * Called when user make a move
      * Update move pointers (arrows pointing to potential moves).
      */
     void updateMovePointers();
 
   private:
-    Board* b; /**< Contains the board information. Used to draw the state of the board on screen */
+    Board* b; /**< Contains the board's state and logic */
 
     /****************************************************************************
      * Images used in drawing
