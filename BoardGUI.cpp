@@ -28,7 +28,7 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
   //setBoxes(boxArr, 70);
 
   /////////////////////////////////////////////////////////////////////////////
-  //                     Init images and coordinates
+  //                 Load media and initialize position
   /////////////////////////////////////////////////////////////////////////////
   boardImg.loadFromFile(renderer, "img/boardGUI/board.jpg");
   piecesSprite.loadFromFile(renderer, "img/boardGUI/pieces.png");
@@ -44,6 +44,8 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
 
   colorSymbols[0].loadFromFile(renderer, "img/boardGUI/whiteSymbol.png");
   colorSymbols[1].loadFromFile(renderer, "img/boardGUI/blackSymbol.png");
+
+  crosshair.loadFromFile(renderer, "img/boardGUI/crosshair.png");
 
   //position of piece's image on sprite sheet
   for(int i = 0; i < 12; i++) {
@@ -90,6 +92,8 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
   //SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0x00 );
   //SDL_RenderDrawRects(renderer, boardSquares, 64);
 
+  int kingSquare = b->getKingSquare(b->getPlayer());
+
   // Draw all chess pieces from board
   for (int i = 0; i < Board::NUM_SQUARES; i++) {
     int piece = b->getPieceGUI(i);
@@ -103,6 +107,10 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
       piecesSprite.setTransparency(ALPHA_FADED);
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
       piecesSprite.setTransparency(ALPHA_NORMAL);
+    }
+    if (i == kingSquare) {
+      SDL_Rect rect = {boardSquares[i].x - 10, boardSquares[i].y - 10, 80, 80};
+      crosshair.render(renderer, NULL, &rect);
     }
   }
 

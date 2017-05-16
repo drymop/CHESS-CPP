@@ -16,7 +16,7 @@ class BoardGUI : public GUI {
   public:
 
     /***************************************************************************
-     * All input values returned by this gui's getInput method
+     *        All input values returned by this GUI's getInput method
      ***************************************************************************/
 
     static const int INPUT_MIN_SQUARE = 1; /**< The smallest value of a chess square input, corresponds to square a1. */
@@ -30,7 +30,7 @@ class BoardGUI : public GUI {
 
 
     /***************************************************************************
-     * Public methods
+     *                               Public methods
      ***************************************************************************/
 
     /**
@@ -45,6 +45,11 @@ class BoardGUI : public GUI {
      * @param renderer: the renderer to draw.
      */
     void draw(SDL_Renderer* renderer);
+
+    /**
+     * Animate the last move
+     */
+    void animateMove(SDL_Renderer* renderer);
 
     /**
      * Set which player is human
@@ -62,7 +67,7 @@ class BoardGUI : public GUI {
     Board* b; /**< Contains the board's state and logic */
 
     /****************************************************************************
-     * Images used in drawing
+     *                           Images used in drawing
      ****************************************************************************/
 
     TextureWrapper bgImg, boardImg, piecesSprite;
@@ -71,13 +76,14 @@ class BoardGUI : public GUI {
     TextureWrapper playerTxt, comTxt, promoteTxt;
     TextureWrapper moveArrow;
     TextureWrapper colorSymbols[2];
+    TextureWrapper crosshair;
 
     const Uint8 ALPHA_FADED = 100; /**< The alpha value to draw faded chess pieces */
     const Uint8 ALPHA_NORMAL = 255; /**<The alpha value to draw normal chess pieces */
 
 
     /****************************************************************************
-     * Coordinates of all images
+     *                         Coordinates of all images
      ****************************************************************************/
 
     SDL_Rect pieceClips[Board::NUM_COLORED_TYPES]; /**<Each piece is drawn by clipping a square from the piece sprite */
@@ -85,15 +91,25 @@ class BoardGUI : public GUI {
     SDL_Rect undoRect, homeRect, playerTxtRect, colorSymbolRect, promoteTxtRect;
     SDL_Rect promotePieceRects[4];
 
-    int humanSide;
+    int humanSide; /**< The side that is human player (WHITE, BLACK, or BOTH_COLOR) */
 
     /****************************************************************************
-     * Move pointer animation
+     *                          Move pointer animation
      ****************************************************************************/
     std::vector<int> availableMoves;
     const int ARROW_HIGH = 20;
     const int ARROW_LOW = 10;
     float arrowSpeed = 0.015;
     float arrowHeight = ARROW_LOW;
+
+    /****************************************************************************
+     *                             Special case draw
+     ****************************************************************************/
+
+    /**
+     * Set up the promotion buttons or remove them
+     * @param on: true if turning on promotion panel, and false if turning off
+     */
+    void setPromotionPanel(bool on);
 };
 #endif // BOARDGUI_H
