@@ -6,19 +6,16 @@ ChooseComGUI::ChooseComGUI(SDL_Renderer* renderer){
   bothSide.loadFromFile(renderer,"img/choosePlayerGUI/both.png");
   background.loadFromFile(renderer,"img/choosePlayerGUI/background.jpg");
 
-  Box* boxArr = new Box[6];
-  boxArr[0] = {102, 354, 282, 409, INPUT_WHITE_EASY};
-  boxArr[1] = {102, 422, 282, 480, INPUT_WHITE_MEDIUM};
-  boxArr[2] = {102, 493, 282, 551, INPUT_WHITE_HARD};
-  boxArr[3] = {506, 110, 686, 168, INPUT_BLACK_EASY};
-  boxArr[4] = {506, 179, 686, 237, INPUT_BLACK_MEDIUM};
-  boxArr[5] = {506, 247, 686, 305, INPUT_BLACK_HARD};
-
-  setBoxes(boxArr,6);
-
+  boxes.push_back( Box(102, 354, 282, 409, INPUT_WHITE_EASY) );
+  boxes.push_back( Box(102, 422, 282, 480, INPUT_WHITE_MEDIUM) );
+  boxes.push_back( Box(102, 493, 282, 551, INPUT_WHITE_HARD) );
+  boxes.push_back( Box(506, 110, 686, 168, INPUT_BLACK_EASY) );
+  boxes.push_back( Box(506, 179, 686, 237, INPUT_BLACK_MEDIUM) );
+  boxes.push_back( Box(506, 247, 686, 305, INPUT_BLACK_HARD) );
 }
 
 void ChooseComGUI::draw(SDL_Renderer* renderer) {
+  SDL_RenderClear(renderer);
   bothSide.render(renderer);
   SDL_RenderPresent(renderer);
 }

@@ -8,7 +8,7 @@ class HumanPlayer : public Player
 {
   public:
     HumanPlayer(BoardGUI* brdGUI, Board* brd);
-    ~HumanPlayer();
+    ~HumanPlayer() {};
 
     bool isHuman();
     int decideMove();

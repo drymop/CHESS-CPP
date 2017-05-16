@@ -8,19 +8,15 @@ const int StartGUI::quitButtonX = 254;
 const int StartGUI::quitButtonY = 400;
 const float StartGUI::speed = 2;
 
-StartGUI::StartGUI(SDL_Renderer* renderer)
-{
+StartGUI::StartGUI(SDL_Renderer* renderer) {
   singleButton.loadFromFile(renderer, "img/startGUI/single-player.png");
   multiButton.loadFromFile(renderer, "img/startGUI/multi-player.png");
   quitButton.loadFromFile(renderer, "img/startGUI/quit.png");
   background.loadFromFile(renderer, "img/startGUI/background.jpg");
 
-  Box* boxArr = new Box[3];
-  boxArr[0] = {singleButtonX, singleButtonY, singleButtonX + 292, singleButtonY + 94, INPUT_SINGLE_PLAYER};
-  boxArr[1] = {multiButtonX, multiButtonY, multiButtonX + 292, multiButtonY + 94, INPUT_MULTI_PLAYER};
-  boxArr[2] = {quitButtonX, quitButtonY, quitButtonX + 292, quitButtonY + 94, INPUT_QUIT};
-
-  setBoxes(boxArr,3);
+  boxes.push_back(Box(singleButtonX, singleButtonY, singleButtonX + 292, singleButtonY + 94, INPUT_SINGLE_PLAYER));
+  boxes.push_back(Box(multiButtonX, multiButtonY, multiButtonX + 292, multiButtonY + 94, INPUT_MULTI_PLAYER));
+  boxes.push_back(Box(quitButtonX, quitButtonY, quitButtonX + 292, quitButtonY + 94, INPUT_QUIT));
 }
 
 void StartGUI::draw(SDL_Renderer* renderer)
@@ -55,4 +51,3 @@ void StartGUI::openAnimation(SDL_Renderer* renderer)
     }
   }
 }
-

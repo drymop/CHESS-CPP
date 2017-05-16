@@ -16,9 +16,7 @@ EndGUI::EndGUI(SDL_Renderer* renderer)
   backgroundWin.loadFromFile(renderer, "img/endGUI/backgroundwin.jpg");
   backgroundLose.loadFromFile(renderer, "img/endGUI/backgroundlose.jpg");
 
-  Box* boxArr = new Box[1];
-  boxArr[0] = {buttonX, buttonY, buttonX + 292, buttonY + 94, 1};
-  setBoxes(boxArr, 1);
+  boxes.push_back( Box(buttonX, buttonY, buttonX + 292, buttonY + 94, 1) );
 }
 
 void EndGUI::setPlayer(int p)
@@ -64,4 +62,3 @@ void EndGUI::draw(SDL_Renderer* renderer)
   }
   SDL_RenderPresent(renderer);
 }
-

@@ -58,7 +58,7 @@ class TextureWrapper
      * @param crop only the part of the texture in side this rectangle is drawn
      * @param dist the texture part will fill in this rectangle on screen
      */
-    void render(SDL_Renderer* renderer, SDL_Rect* crop, SDL_Rect* dst);
+    void render(SDL_Renderer* renderer, SDL_Rect* crop = NULL, SDL_Rect* dst = NULL);
 
   private:
     /**

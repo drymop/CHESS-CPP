@@ -33,7 +33,7 @@ class ChooseComGUI: public GUI
     TextureWrapper background;
 
     SDL_Rect leftSideRect, rightSideRect;
-    const float MOVING_SPEED = 1;
+    const float MOVING_SPEED = 4;
 
 
 

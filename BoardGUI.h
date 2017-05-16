@@ -1,26 +1,26 @@
 /***********************************************************************//**
- * Draw the chessboard with side bar during the game,
- * and get input from user during game play.
+ * Draw the chessboard with side bar,
+ * and get input from user (square clicked, promotion, undo)
+ * during game play.
  ***************************************************************************/
 
 #ifndef BOARDGUI_H
 #define BOARDGUI_H
 
+#include <Board.h>
 #include <GUI.h>
 #include <TextureWrapper.h>
-#include <Board.h>
 
 
-class BoardGUI : public GUI
-{
+class BoardGUI : public GUI {
   public:
 
     /***************************************************************************
      * All input values returned by this gui's getInput method
      ***************************************************************************/
 
-    static const int INPUT_MIN_SQUARE = 1; /**< The smallest value of a board square input, corresponds to square a1. */
-    static const int INPUT_MAX_SQUARE = 64; /**< The smallest value of a board square input, corresponds to square h8. */
+    static const int INPUT_MIN_SQUARE = 1; /**< The smallest value of a chess square input, corresponds to square a1. */
+    static const int INPUT_MAX_SQUARE = 64; /**< The smallest value of a chess square input, corresponds to square h8. */
     static const int INPUT_UNDO = -1; /**< User chooses undo */
     static const int INPUT_HOME = -2; /**< User chooses to return to the start screen */
     static const int INPUT_PROMOTE_QUEEN = -3; /**< User promotes pawn to queen */
@@ -34,9 +34,9 @@ class BoardGUI : public GUI
      ***************************************************************************/
 
     /**
-     * Init the GUI.
+     * Load all the images needed for displaying to SDL_Texture
      * @param brd: the pointer to the board that this GUI will be drawing.
-     * @param renderer: the renderer to draw.
+     * @param renderer: an SDL_Renderer
      */
     BoardGUI(Board* brd, SDL_Renderer* renderer);
 
@@ -47,15 +47,22 @@ class BoardGUI : public GUI
     void draw(SDL_Renderer* renderer);
 
     /**
-     * Tell the GUI that user has chosen a new square.
-     * Use to update move pointers
+     * Set which player is human
+     * @param color: the color of human player, according to Board::Colors enum
+     */
+    void setPlayer(int color);
+
+    /**
+     * Called when user make a move
+     * Update move pointers (arrows pointing to potential moves).
      */
     void updateMovePointers();
+
   private:
-    Board* b; /**< Contains the board information. Used to draw the state of the board on screen */
+    Board* b; /**< Contains the board's state and logic */
 
     /****************************************************************************
-     * Images used in displaying screen
+     * Images used in drawing
      ****************************************************************************/
 
     TextureWrapper bgImg, boardImg, piecesSprite;
@@ -73,10 +80,12 @@ class BoardGUI : public GUI
      * Coordinates of all images
      ****************************************************************************/
 
-    SDL_Rect pieceClips[12]; /**<Each piece is drawn by clipping a square from the piece sprite */
-    SDL_Rect boardSquares[64]; /** Each SDL_Rect fits a square of the board. */
+    SDL_Rect pieceClips[Board::NUM_COLORED_TYPES]; /**<Each piece is drawn by clipping a square from the piece sprite */
+    SDL_Rect boardSquares[Board::NUM_SQUARES]; /** Each SDL_Rect fits a square of the board. */
     SDL_Rect undoRect, homeRect, playerTxtRect, colorSymbolRect, promoteTxtRect;
     SDL_Rect promotePieceRects[4];
+
+    int humanSide;
 
     /****************************************************************************
      * Move pointer animation

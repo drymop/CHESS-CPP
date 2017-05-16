@@ -4,11 +4,10 @@
 #include <Player.h>
 #include <Board.h>
 
-class RandomPlayer : public Player
-{
+class RandomPlayer : public Player {
   public:
     RandomPlayer(Board* brd);
-    ~RandomPlayer();
+    ~RandomPlayer() {};
 
     bool isHuman();
     int decideMove();

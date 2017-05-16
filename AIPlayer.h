@@ -1,5 +1,5 @@
 /***********************************************************************//**
- * A chess AI. Decide which move to make on a board by looking ahead some plies.
+ * A chess AI. Decide which move to make on a board by.
  * Uses negamax with alpha-beta pruning.
  ***************************************************************************/
 
@@ -11,61 +11,73 @@
 #include "Player.h"
 
 
-class AIPlayer : public Player
-{
+class AIPlayer : public Player {
   public:
     /**
      * @param brd: the board to consider.
-     * @param brdgui: the board GUI used to display the board (to keep gui responsive while calculating move).
-     * @param difficulty: the number of half-move the AI can look ahead.
+     * @param brdgui: the board GUI used to display the board.
+     * @param difficulty: the number of moves (half-turn) the AI can look ahead.
      */
     AIPlayer(Board* brd, BoardGUI* brdgui, int difficulty);
-
-    ~AIPlayer();
+    ~AIPlayer() {}
 
     bool isHuman();
     int decideMove();
 
   private:
-    Board* b;
-    BoardGUI* bgui;
-    Board bSave; /**< Saved board for debugging */
-    int maxDepth; /**< Number of half-moves AI can search */
-
-    int numNodes; /**< Number of moves made during search. For debugging purposes. */
+    Board* b; /**< The board that the AI is playing on */
+    BoardGUI* bgui; /**< The GUI used to display the board. Need this to keep GUI responsive while AI is thinking. */
+    int maxDepth; /**< Number of half-moves AI can look ahead */
 
     /***************************************************************************
-     * Values used in static board evaluation
+     * Values used in board evaluation
      ***************************************************************************/
 
     static const int MATE_VALUE; /**< The evaluation of a won board */
     /**
-     * The values of each piece type.
-     * The order of types: queen, king, rook, knight, bishop, pawn.
+     * The number of best moves to be searched first.
+     * Used in reordering moves.
      */
-    static const int pieceValues[6];
+    static const int NUM_BEST_MOVES;
     /**
-     * The positional values of pieces.
-     * Indexes: piece type, row, column
-     * Piece type 6th is king end game
+     * The values of each piece type.
+     * The order of types: queen, king, rook, knight, bishop, pawn (indicated in pieceTypes enum).
      */
-    static const int positionValues[7][8][8];
+    static const int pieceValues[Board::NUM_PIECE_TYPES];
+    /**
+     * The positional values of pieces for black.
+     * To get the positional values for white, flips the array upside down
+     * Indexes: piece type, row, column.
+     * The 6th piece type is king during end game.
+     */
+    static const int positionValues[Board::NUM_PIECE_TYPES+1][Board::NUM_SQUARES];
+
+    /**
+     * AI switches to end game strategy when the total material is smaller than this value
+     */
+    static const int LATE_GAME_MATERIAL;
 
     /***************************************************************************
      * Search and Evaluation methods
      ***************************************************************************/
+
     /**
-     * Search a move tree and return its value (with alpha beta prunning)
+     * Search a move tree and return its value. Has alpha-beta pruning with move ordering.
+     * @param color: 1 if the next player to move is white,
+     * and -1 if the next player to move is black.
      */
     int negamax(int depth, int alpha, int beta, int color);
 
     /**
-     * Reorder the moves so that the 5 best moves is placed first.
+     * Reorder the moves so that the best moves after 1 ply are searched first.
+     * @param moveOrder: an empty array
+     * @param numMoves: the size of moveOrder array
+     * @param color: 1 if the next player to move is black, else -1.
      */
     void reorderMoves(int* moveOrder, int numMoves, int color);
 
     /**
-     * Static evaluation of the board. A positive score means white has advantage.
+     * Static evaluation of the board. A positive score means white has an advantage.
      * @param depth: the depth of the current board. 0 is the deepest board.
      * @return the score of the board (in white's perspective)
      */
@@ -74,12 +86,16 @@ class AIPlayer : public Player
     /***************************************************************************
      * Debug
      ***************************************************************************/
+
+    int numNodes; /**< Number of moves made during search. Used to check pruning. */
+    Board bSave; /**< Saved board for debugging */
     /**
-     * Save the current board's state
+     * Save the current board's state to bSave
      */
     void saveBoard();
     /**
-     * Compare the current board to the saved board, and print out the difference.
+     * Compare the current board to the saved board.
+     * If the board is different after thinking, there is something wrong with either the AI or the board
      */
     bool isBoardDifferent();
 };

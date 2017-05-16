@@ -1,8 +1,8 @@
-/**
+/******************************************************//**
  * Chess Game
- * @author lmtuan
- * @version 0.9
- */
+ * @author Viet
+ * @version 2.1
+ **********************************************************/
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -20,12 +20,12 @@
 #include "StartGUI.h"
 
 
-/************************************
- * Sizes and title of the game window
- ************************************/
+/*******************************************************************
+ *                 SDL Management
+ *******************************************************************/
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
-const char* WINDOW_TITLE = "Chess Game by lmtuan";
+const char* WINDOW_TITLE = "Viet Chess";
 
 /**
  * Initialize window and renderer
@@ -40,11 +40,18 @@ bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer);
  */
 void quitGraphic(SDL_Window* window, SDL_Renderer* rederer);
 
+
+/*******************************************************************
+ *                            Main game
+ *******************************************************************/
+
 /**
  * Play a chess game, and return the winner
- * @return 0 for white, 1 for black, 2 for draw, and -1 for premature quit (back to start screen or quit game)
+ * @return Board::WHITE for white, Board::BLACK for black, Board::BOTH_COLOR for tie,
+ * and -1 for premature quit (back to start screen or quit game)
  */
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer);
+
 
 
 int main(int argc, char* argv[]) {
@@ -58,18 +65,16 @@ int main(int argc, char* argv[]) {
 
   GUI::quit = false;
   StartGUI sgui(renderer);
-
   ChooseComGUI cgui(renderer);
-
   BoardGUI bgui(&b, renderer);
-
   EndGUI egui(renderer);
+
   Player** players = new Player*[2];
+
 
   int input;
   while (true) {
-    b.initBoard();
-
+    b.initBoard(); //new board every game
     sgui.draw(renderer);
     do {
       input = sgui.getInput();
@@ -81,7 +86,8 @@ int main(int argc, char* argv[]) {
     } else if (input == StartGUI::INPUT_MULTI_PLAYER) { // Human vs Human
       players[0] = new HumanPlayer(&bgui, &b);
       players[1] = new HumanPlayer(&bgui, &b);
-      egui.setPlayer(2);
+      bgui.setPlayer(Board::BOTH_COLOR);
+      egui.setPlayer(Board::BOTH_COLOR);
     } else {
       cgui.openingAnimation(renderer);
       cgui.draw(renderer);
@@ -94,22 +100,23 @@ int main(int argc, char* argv[]) {
       if (GUI::quit) break;
 
       switch (input) {
-        case ChooseComGUI::INPUT_WHITE_EASY  : comPlayer = 0; difficulty = 2; break;
-        case ChooseComGUI::INPUT_WHITE_MEDIUM: comPlayer = 0; difficulty = 4; break;
-        case ChooseComGUI::INPUT_WHITE_HARD  : comPlayer = 0; difficulty = 6; break;
-        case ChooseComGUI::INPUT_BLACK_EASY  : comPlayer = 1; difficulty = 2; break;
-        case ChooseComGUI::INPUT_BLACK_MEDIUM: comPlayer = 1; difficulty = 4; break;
-        case ChooseComGUI::INPUT_BLACK_HARD  : comPlayer = 1; difficulty = 6; break;
+        case ChooseComGUI::INPUT_WHITE_EASY  : comPlayer = Board::WHITE; difficulty = 2; break;
+        case ChooseComGUI::INPUT_WHITE_MEDIUM: comPlayer = Board::WHITE; difficulty = 4; break;
+        case ChooseComGUI::INPUT_WHITE_HARD  : comPlayer = Board::WHITE; difficulty = 6; break;
+        case ChooseComGUI::INPUT_BLACK_EASY  : comPlayer = Board::BLACK; difficulty = 2; break;
+        case ChooseComGUI::INPUT_BLACK_MEDIUM: comPlayer = Board::BLACK; difficulty = 4; break;
+        case ChooseComGUI::INPUT_BLACK_HARD  : comPlayer = Board::BLACK; difficulty = 6; break;
       }
       players[comPlayer] = new AIPlayer(&b, &bgui, difficulty);
       players[1-comPlayer] = new HumanPlayer(&bgui, &b);
+      bgui.setPlayer(1-comPlayer);
       egui.setPlayer(1-comPlayer);
       cgui.endingAnimation(renderer);
     }
 
-    /*
-     * Play the game
-     */
+    ////////////////////////////////////////////////////////////////
+    //                         Play the game
+    ////////////////////////////////////////////////////////////////
     int winner = playGame(&b, players, &bgui, renderer);
     delete players[0]; players[0] = NULL;
     delete players[1]; players[1] = NULL;
@@ -128,8 +135,8 @@ int main(int argc, char* argv[]) {
     do {
       input = egui.getInput();
     } while (input == 0);
-    printf("end gui input is %i\n", input);
   }
+
   delete[] players;
 
   quitGraphic(window, renderer);
@@ -137,8 +144,9 @@ int main(int argc, char* argv[]) {
 }
 
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer) {
-  int numUndo[2] = {1, 1};
+  int numUndo[2] = {-1, -1};
   int curPlayer, input;
+  bgui->draw(renderer);
   while (b->getNumMoves() != 0) { // continue as long as the game haven't ended
     curPlayer = b->getPlayer();
     input = players[ curPlayer ]->decideMove();
@@ -147,6 +155,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
     if (players[curPlayer]->isHuman()) {
     // if player is human, the value returned is a chosen square. Choose the appropriate square.
       if (input == 0) { // user haven't selected move
+        if (GUI::quit) return -1;
       } else if (input >= BoardGUI::INPUT_MIN_SQUARE && input <= BoardGUI::INPUT_MAX_SQUARE) { //olayer chose a square in board
         // if there is a promotion event, cannot make move until player choose a promotion
         if (b->hasPromotion()) {
@@ -155,7 +164,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
           b->chooseSquare(input - 1);
         }
       } else {//player chose a button from side bar
-        int promoteTo;
+        int promoteType;
         switch (input) {
           case BoardGUI::INPUT_UNDO: // undo
             if (numUndo[curPlayer] != 0) {
@@ -165,31 +174,32 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
             }
             break;
           case BoardGUI::INPUT_HOME: return -1; // return home
-          case BoardGUI::INPUT_PROMOTE_QUEEN: promoteTo = 0; break; //promote to queen
-          case BoardGUI::INPUT_PROMOTE_ROOK: promoteTo = 1; break; //promote to rook
-          case BoardGUI::INPUT_PROMOTE_BISHOP: promoteTo = 2; break; //promote to bishop
-          case BoardGUI::INPUT_PROMOTE_KNIGHT: promoteTo = 3; break; //promote to knight
+          case BoardGUI::INPUT_PROMOTE_QUEEN:  promoteType = Board::MOVE_PROMOTION_QUEEN; break;
+          case BoardGUI::INPUT_PROMOTE_ROOK:   promoteType = Board::MOVE_PROMOTION_ROOK; break;
+          case BoardGUI::INPUT_PROMOTE_BISHOP: promoteType = Board::MOVE_PROMOTION_BISHOP; break;
+          case BoardGUI::INPUT_PROMOTE_KNIGHT: promoteType = Board::MOVE_PROMOTION_KNIGHT; break;
         }
         if (b->hasPromotion()) {
-          b->promote(promoteTo);
+          b->promote(promoteType);
         }
       }
       bgui->updateMovePointers();
     } else {
     //if is AI, the value returned is a move number. Make the move, and process input queue to catch quitting event.
+      if (input == -1) return -1; // AI returns -1 when user quit during AI thinking
       b->makeMove(input);
-      bgui->getInput(); //process all input made during ai's thinking
     }
-
-    // if quit or user chooses to return to start screen
-    if (GUI::quit || input == BoardGUI::INPUT_HOME) return -1;
 
     // draw board
     bgui->draw(renderer);
   }
-  printf("Player %i wins!", b->getWinner()+1);
+  SDL_Delay(3000);
   return (b->getWinner());
 }
+
+/*******************************************************************
+ *                       Implementation
+ *******************************************************************/
 
 bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer) {
   // Init SDL

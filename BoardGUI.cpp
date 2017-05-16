@@ -1,37 +1,35 @@
 #include "BoardGUI.h"
-#include <PieceType.h>
 
 #include <stdio.h>
 
 
-BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
-{
+BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
   this->b = brd;
 
-  /*
-   * Set an array of buttons (or boxes) so that GUI return clicks on these buttons
-   */
-  Box* boxArr = new Box[70];
+  ////////////////////////////////////////////////////////////////////////////
+  //   Set an array of boxes so that GUI can return clicks on these boxes
+  ////////////////////////////////////////////////////////////////////////////
+
   // buttons for 64 squares of chess board
   for(int i = INPUT_MIN_SQUARE - 1; i < INPUT_MAX_SQUARE; i++) {
     // coordinate of the top left corner of the square
     int x = 48 + (i%8) * 507 / 8;
     int y = 50 + (7- i/8) * 507 / 8;
-    boxArr[i] = {x, y , x+60, y+60, i+1};
+    boxes.push_back( Box(x, y , x+60, y+60, i+1) );
   }
   // buttons on the side bar
-  boxArr[64] = {626, 18, 682, 87, INPUT_UNDO};//undo button
-  boxArr[65] = {721, 18, 782, 87, INPUT_HOME};//home button
-  boxArr[66] = {611, 342, 790, 392, INPUT_PROMOTE_QUEEN};//queen promote
-  boxArr[67] = {611, 403, 790, 453, INPUT_PROMOTE_ROOK};//rook promote
-  boxArr[68] = {611, 465, 790, 515, INPUT_PROMOTE_BISHOP};//bishop promote
-  boxArr[69] = {611, 528, 790, 578, INPUT_PROMOTE_KNIGHT};//knight promote
+  boxes.push_back( Box(626, 18, 682, 87, INPUT_UNDO) );//undo button
+  boxes.push_back( Box(721, 18, 782, 87, INPUT_HOME) );//home button
+  boxes.push_back( Box(611, 342, 790, 392, INPUT_PROMOTE_QUEEN) );//queen promote
+  boxes.push_back( Box(611, 403, 790, 453, INPUT_PROMOTE_ROOK) );//rook promote
+  boxes.push_back( Box(611, 465, 790, 515, INPUT_PROMOTE_BISHOP) );//bishop promote
+  boxes.push_back( Box(611, 528, 790, 578, INPUT_PROMOTE_KNIGHT) );//knight promote
   // pass the array to GUI
-  setBoxes(boxArr, 70);
+  //setBoxes(boxArr, 70);
 
-  /*
-   * Init textures and coordinates
-   */
+  /////////////////////////////////////////////////////////////////////////////
+  //                     Init images and coordinates
+  /////////////////////////////////////////////////////////////////////////////
   boardImg.loadFromFile(renderer, "img/boardGUI/board.jpg");
   piecesSprite.loadFromFile(renderer, "img/boardGUI/pieces.png");
   piecesSprite.setBlendMode(SDL_BLENDMODE_BLEND); // piece can be made transparent
@@ -69,52 +67,57 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer)
   promotePieceRects[3] = {617, 528, 50, 50};
 }
 
-void BoardGUI::updateMovePointers()
-{
+void BoardGUI::updateMovePointers() {
   availableMoves.clear();
-  b->getMovesFromSquare(availableMoves);
+  int chosenSquare = b->getChosenSquare();
+  if (chosenSquare >= 0 && chosenSquare < Board::NUM_SQUARES) {
+    b->getMovesFromSquare(availableMoves, chosenSquare);
+  }
 }
 
-void BoardGUI::draw(SDL_Renderer* renderer)
-{
+void BoardGUI::setPlayer(int color) {
+  humanSide = color;
+}
 
-  // Clear screen with white color
+void BoardGUI::draw(SDL_Renderer* renderer) {
+  // Clear screen
   SDL_RenderClear( renderer );
 
   // Draw chessboard
   boardImg.render(renderer, 0, 0);
+
   // Draw click boxes
   //SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0x00 );
   //SDL_RenderDrawRects(renderer, boardSquares, 64);
 
   // Draw all chess pieces from board
-  for (int i = 0; i < 64; i++)
-  {
+  for (int i = 0; i < Board::NUM_SQUARES; i++) {
     int piece = b->getPieceGUI(i);
-    if (piece >= 0 && piece < 12)
-    {
+    if (piece == Board::EMPTY) continue;
+    if (piece < Board::NUM_COLORED_TYPES) {
       // if piece is not chosen, draw as normal
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
-    }
-    else if (piece >= 12)
-    {
+    } else {
       // if piece is chosen, draw it half transparent
+      piece -= Board::NUM_COLORED_TYPES;
       piecesSprite.setTransparency(ALPHA_FADED);
-      piecesSprite.render(renderer, &pieceClips[piece-12], &boardSquares[i]);
+      piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
       piecesSprite.setTransparency(ALPHA_NORMAL);
     }
   }
 
-  /*
-   * Side Bar
-   */
+  // Draw side Bar
   undoButton.render(renderer, NULL, &undoRect);
   homeButton.render(renderer, NULL, &homeRect);
-  playerTxt.render(renderer, NULL, &playerTxtRect);
+  if (humanSide == Board::BOTH_COLOR || humanSide == b->getPlayer()) {
+    playerTxt.render(renderer, NULL, &playerTxtRect);
+  } else {
+    comTxt.render(renderer, NULL, &playerTxtRect);
+  }
   colorSymbols[b->getPlayer()].render(renderer, NULL, &colorSymbolRect);
 
-  for (int i = 0; i < availableMoves.size(); i++)
-  {
+  // Draw move pointers
+  for (int i = 0; i < availableMoves.size(); i++) {
     int arrowX = boardSquares[availableMoves[i]].x;
     int arrowY = boardSquares[availableMoves[i]].y;
     arrowY -= arrowHeight;
@@ -123,15 +126,15 @@ void BoardGUI::draw(SDL_Renderer* renderer)
   arrowHeight += arrowSpeed;
   if (arrowHeight > ARROW_HIGH || arrowHeight < ARROW_LOW) arrowSpeed = -arrowSpeed;
 
-  if (b->hasPromotion())
-  {
+  // Draw promotion panel
+  if (b->hasPromotion()) {
     // Draw promotion options
     promoteTxt.render(renderer, NULL, &promoteTxtRect);
     int color = b->getPlayer()? 0 : 6;
-    piecesSprite.render(renderer, &pieceClips[BQ + color], &promotePieceRects[0]);
-    piecesSprite.render(renderer, &pieceClips[BR + color], &promotePieceRects[1]);
-    piecesSprite.render(renderer, &pieceClips[BB + color], &promotePieceRects[2]);
-    piecesSprite.render(renderer, &pieceClips[BN + color], &promotePieceRects[3]);
+    piecesSprite.render(renderer, &pieceClips[Board::BQ + color], &promotePieceRects[0]);
+    piecesSprite.render(renderer, &pieceClips[Board::BR + color], &promotePieceRects[1]);
+    piecesSprite.render(renderer, &pieceClips[Board::BB + color], &promotePieceRects[2]);
+    piecesSprite.render(renderer, &pieceClips[Board::BN + color], &promotePieceRects[3]);
   }
 
 
