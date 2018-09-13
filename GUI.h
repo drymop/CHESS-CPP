@@ -8,7 +8,7 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <vector>
 
 class GUI
@@ -41,7 +41,7 @@ class GUI
 
   public:
     GUI();
-    ~GUI();
+    virtual ~GUI();
 
     /**
      * Quit flag

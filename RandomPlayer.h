@@ -1,8 +1,8 @@
 #ifndef RANDOMPLAYER_H
 #define RANDOMPLAYER_H
 
-#include <Player.h>
-#include <Board.h>
+#include "Player.h"
+#include "Board.h"
 
 class RandomPlayer : public Player {
   public:

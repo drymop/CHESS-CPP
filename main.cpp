@@ -4,8 +4,8 @@
  * @version 2.1
  **********************************************************/
 
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 
 #include "AIPlayer.h"
@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
 
   int input;
   while (true) {
+    sgui.playMusic();
     b.initBoard(); //new board every game
     sgui.draw(renderer);
     do {
@@ -114,10 +115,14 @@ int main(int argc, char* argv[]) {
       cgui.endingAnimation(renderer);
     }
 
+    sgui.stopMusic();
+
     ////////////////////////////////////////////////////////////////
     //                         Play the game
     ////////////////////////////////////////////////////////////////
+    bgui.playMusic();
     int winner = playGame(&b, players, &bgui, renderer);
+    bgui.stopMusic();
     delete players[0]; players[0] = NULL;
     delete players[1]; players[1] = NULL;
     /*
@@ -139,17 +144,26 @@ int main(int argc, char* argv[]) {
 
   delete[] players;
 
+  sgui.destroyMedia();
+  bgui.destroyMedia();
+  egui.destroyMedia();
+
   quitGraphic(window, renderer);
+
   return 0;
 }
 
 int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer) {
   int numUndo[2] = {-1, -1};
   int curPlayer, input;
+  int gameLength = 0; // increase every time a move is made
+
   bgui->draw(renderer);
+
   while (b->getNumMoves() != 0) { // continue as long as the game haven't ended
     curPlayer = b->getPlayer();
-    input = players[ curPlayer ]->decideMove();
+
+    input = players[ curPlayer ]->decideMove(); //get the move
 
     // make the move
     if (players[curPlayer]->isHuman()) {
@@ -167,7 +181,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
         int promoteType;
         switch (input) {
           case BoardGUI::INPUT_UNDO: // undo
-            if (numUndo[curPlayer] != 0) {
+            if (gameLength > 1 && numUndo[curPlayer] != 0) {
               b->undoMove();
               b->undoMove();
               numUndo[curPlayer]--;
@@ -190,6 +204,10 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
       b->makeMove(input);
     }
 
+    if (b->getGameLength() != gameLength) {
+      gameLength = b->getGameLength();
+      bgui->playMoveSFX();
+    }
     // draw board
     bgui->draw(renderer);
   }
@@ -203,7 +221,7 @@ int playGame(Board* b, Player** players, BoardGUI* bgui, SDL_Renderer* renderer)
 
 bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer) {
   // Init SDL
-  if( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+  if( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0 ) {
     printf("Failed to initialize SDL. SDL Error: %s\n", SDL_GetError());
     return false;
   }
@@ -226,12 +244,17 @@ bool initGraphic(SDL_Window* &window, SDL_Renderer* &renderer) {
     printf("Failed to create renderer. SDL error: %s\n", SDL_GetError());
     return false;
   }
-  // Init rederer's color to white
-  SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+  SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF); // Init rederer's color to white
 
   // Init SDL_Image for Image loading
   if( IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) == 0 ) {
     printf("Failed to initialize SDL_image. SDL_image error: %s\n", IMG_GetError());
+    return false;
+  }
+
+  // Init SDL_Mixer for audio
+  if ( Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    printf( "Failed to initialize SDL_Mixer. SDL_mixer error: %s\n", Mix_GetError() );
     return false;
   }
   return true;
@@ -245,6 +268,7 @@ void quitGraphic(SDL_Window* window, SDL_Renderer* renderer) {
   window = NULL;
 
   // quit SDL
+  Mix_Quit();
   IMG_Quit();
   SDL_Quit();
 }

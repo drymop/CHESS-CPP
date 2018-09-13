@@ -104,6 +104,12 @@ public:
   std::vector<int> getMoveList();
 
   /**
+   * Get current king's position.
+   * @param color: WHITE or BLACK
+   */
+  int getKingSquare(int color);
+
+  /**
    * Get the currently chosen square
    * @return the chosen square, -1 if no square is chosen
    */
@@ -115,6 +121,11 @@ public:
    * @param startSquare: the starting square
    */
   void getMovesFromSquare(std::vector<int>& squareMoves, const int startSquare);
+
+  /**
+   * @return true if current player's king is checked
+   */
+  bool isKingChecked();
 
   /**
    * Get the history
@@ -132,12 +143,6 @@ public:
    * @return WHITE, BLACK, BOTH_COLOR (for draw), or -1 if game hasn't ended.
    */
   int getWinner();
-
-  /**
-   * Get current king's position.
-   * @param color: WHITE or BLACK
-   */
-  int getKingSquare(int color);
 
   /***************************************************************************
    *                         Move making and undoing

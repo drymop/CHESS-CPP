@@ -67,7 +67,22 @@ BoardGUI::BoardGUI(Board* brd, SDL_Renderer* renderer) {
   promotePieceRects[1] = {617, 403, 50, 50};
   promotePieceRects[2] = {617, 465, 50, 50};
   promotePieceRects[3] = {617, 528, 50, 50};
+
+  /////////////////////////////////////////////////////////////////////////////
+  //                              Load audio
+  /////////////////////////////////////////////////////////////////////////////
+  bgm = Mix_LoadMUS("sound/bgm.mp3");
+  if (!bgm) {
+    printf("Failed to load music. SDL_Mix error: %s\n", Mix_GetError());
+  }
+
+  moveSFX = Mix_LoadWAV("sound/chess move.wav");
+  if (!moveSFX) {
+    printf("Failed to load music. SDL_Mix error: %s\n", Mix_GetError());
+  }
 }
+
+BoardGUI::~BoardGUI() {};
 
 void BoardGUI::updateMovePointers() {
   availableMoves.clear();
@@ -92,8 +107,6 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
   //SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0x00 );
   //SDL_RenderDrawRects(renderer, boardSquares, 64);
 
-  int kingSquare = b->getKingSquare(b->getPlayer());
-
   // Draw all chess pieces from board
   for (int i = 0; i < Board::NUM_SQUARES; i++) {
     int piece = b->getPieceGUI(i);
@@ -108,10 +121,13 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
       piecesSprite.render(renderer, &pieceClips[piece], &boardSquares[i]);
       piecesSprite.setTransparency(ALPHA_NORMAL);
     }
-    if (i == kingSquare) {
-      SDL_Rect rect = {boardSquares[i].x - 10, boardSquares[i].y - 10, 80, 80};
-      crosshair.render(renderer, NULL, &rect);
-    }
+  }
+
+  // Draw cross hair on checked king
+  if (b->isKingChecked()) {
+    int kingSquare = b->getKingSquare(b->getPlayer());
+    SDL_Rect rect = {boardSquares[kingSquare].x - 10, boardSquares[kingSquare].y - 10, 80, 80};
+    crosshair.render(renderer, NULL, &rect);
   }
 
   // Draw side Bar
@@ -145,6 +161,22 @@ void BoardGUI::draw(SDL_Renderer* renderer) {
     piecesSprite.render(renderer, &pieceClips[Board::BN + color], &promotePieceRects[3]);
   }
 
-
   SDL_RenderPresent(renderer);
+}
+
+void BoardGUI::playMoveSFX() {
+  Mix_PlayChannel(-1, moveSFX, 0);
+}
+
+void BoardGUI::playMusic() {
+  Mix_PlayMusic(bgm, -1);
+}
+
+void BoardGUI::stopMusic() {
+  Mix_HaltMusic();
+}
+
+void BoardGUI::destroyMedia() {
+  Mix_FreeChunk(moveSFX);
+  Mix_FreeMusic(bgm);
 }

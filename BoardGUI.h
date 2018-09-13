@@ -7,9 +7,11 @@
 #ifndef BOARDGUI_H
 #define BOARDGUI_H
 
-#include <Board.h>
-#include <GUI.h>
-#include <TextureWrapper.h>
+#include <SDL2/SDL_mixer.h>
+
+#include "Board.h"
+#include "GUI.h"
+#include "TextureWrapper.h"
 
 
 class BoardGUI : public GUI {
@@ -40,16 +42,17 @@ class BoardGUI : public GUI {
      */
     BoardGUI(Board* brd, SDL_Renderer* renderer);
 
+    ~BoardGUI();
+
     /**
      * Draw the chessboard on screen.
      * @param renderer: the renderer to draw.
      */
     void draw(SDL_Renderer* renderer);
 
-    /**
-     * Animate the last move
-     */
-    void animateMove(SDL_Renderer* renderer);
+    void playMusic();
+    void stopMusic();
+    void playMoveSFX();
 
     /**
      * Set which player is human
@@ -62,6 +65,8 @@ class BoardGUI : public GUI {
      * Update move pointers (arrows pointing to potential moves).
      */
     void updateMovePointers();
+
+    void destroyMedia();
 
   private:
     Board* b; /**< Contains the board's state and logic */
@@ -103,13 +108,9 @@ class BoardGUI : public GUI {
     float arrowHeight = ARROW_LOW;
 
     /****************************************************************************
-     *                             Special case draw
+     *                             Audio
      ****************************************************************************/
-
-    /**
-     * Set up the promotion buttons or remove them
-     * @param on: true if turning on promotion panel, and false if turning off
-     */
-    void setPromotionPanel(bool on);
+    Mix_Music* bgm;
+    Mix_Chunk* moveSFX;
 };
 #endif // BOARDGUI_H

@@ -128,6 +128,10 @@ void Board::getMovesFromSquare(std::vector<int>& squareMoves, const int startSqu
   }
 }
 
+bool Board::isKingChecked() {
+  return checkingPieces[0] != -1;
+}
+
 void Board::makeMove(int moveIndex) {
   // cannot make a whole move is the previous move has not finished
   if (promotionSquare != -1) return;

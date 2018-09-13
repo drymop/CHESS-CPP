@@ -1,10 +1,13 @@
 #ifndef ENDGUI_H
 #define ENDGUI_H
-#include "TextureWrapper.h"
-#include "GUI.h"
 
-class EndGUI: public GUI
-{
+#include <SDL2/SDL_mixer.h>
+
+#include "Board.h"
+#include "GUI.h"
+#include "TextureWrapper.h"
+
+class EndGUI: public GUI {
   public:
     EndGUI(SDL_Renderer* renderer);
 
@@ -12,6 +15,8 @@ class EndGUI: public GUI
 
     void setPlayer(int p);
     void setWinner(int w);
+
+    void destroyMedia();
   private:
     TextureWrapper backgroundWin, backgroundLose, menuButton;
     TextureWrapper youWinTxt, youLoseTxt, whiteWinTxt, blackWinTxt, drawTxt;
@@ -35,6 +40,8 @@ class EndGUI: public GUI
      */
     int winner;
 
+    Mix_Chunk* failSFX;
+    Mix_Chunk* winSFX;
 };
 
 #endif // ENDGUI_H

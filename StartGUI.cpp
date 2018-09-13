@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "StartGUI.h"
 
 const int StartGUI::singleButtonX = 254;
@@ -9,6 +11,9 @@ const int StartGUI::quitButtonY = 400;
 const float StartGUI::speed = 2;
 
 StartGUI::StartGUI(SDL_Renderer* renderer) {
+  ///////////////////////////////////////////////////////////////////////
+  //                               Visual
+  ///////////////////////////////////////////////////////////////////////
   singleButton.loadFromFile(renderer, "img/startGUI/single-player.png");
   multiButton.loadFromFile(renderer, "img/startGUI/multi-player.png");
   quitButton.loadFromFile(renderer, "img/startGUI/quit.png");
@@ -17,7 +22,17 @@ StartGUI::StartGUI(SDL_Renderer* renderer) {
   boxes.push_back(Box(singleButtonX, singleButtonY, singleButtonX + 292, singleButtonY + 94, INPUT_SINGLE_PLAYER));
   boxes.push_back(Box(multiButtonX, multiButtonY, multiButtonX + 292, multiButtonY + 94, INPUT_MULTI_PLAYER));
   boxes.push_back(Box(quitButtonX, quitButtonY, quitButtonX + 292, quitButtonY + 94, INPUT_QUIT));
+
+  ///////////////////////////////////////////////////////////////////////
+  //                               Audio
+  ///////////////////////////////////////////////////////////////////////
+  startbmg = Mix_LoadMUS("sound/start bgm.mp3");
+  if (!startbmg) {
+    printf("Failed to load music; %s\n", Mix_GetError());
+  }
 }
+
+StartGUI::~StartGUI() {}
 
 void StartGUI::draw(SDL_Renderer* renderer)
 {
@@ -50,4 +65,17 @@ void StartGUI::openAnimation(SDL_Renderer* renderer)
       break;
     }
   }
+}
+
+void StartGUI::playMusic() {
+  Mix_PlayMusic(startbmg, -1);
+}
+
+void StartGUI::stopMusic() {
+  Mix_HaltMusic();
+}
+
+void StartGUI::destroyMedia() {
+  Mix_FreeMusic(startbmg);
+  startbmg = NULL;
 }
